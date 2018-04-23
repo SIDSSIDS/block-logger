@@ -5,9 +5,12 @@ import ch.qos.logback.core.pattern.PatternLayoutEncoderBase;
 
 public class BlockloggerPatternLayoutEncoder extends PatternLayoutEncoderBase<ILoggingEvent> {
     
+    private final Indent indent = new Indent();
+    
     @Override
     public void start() {
-        BlockloggerPatternLayout patternLayout = new BlockloggerPatternLayout();
+        BlockloggerPatternLayout patternLayout = new BlockloggerPatternLayout(indent);
+        context.putObject(Indent.CONTEXT_KEY, indent);
         patternLayout.setContext(context);
         patternLayout.setPattern(getPattern());
         patternLayout.setOutputPatternAsHeader(outputPatternAsHeader);
