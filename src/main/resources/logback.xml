@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <property name="defaultPattern" value="%d [%-10thread] %-5level %msg%n" />
+    
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="com.kolychev.utils.blocklogger.layout.BlockloggerPatternLayoutEncoder">
+            <pattern>${defaultPattern}</pattern>
+        </encoder>
+    </appender>
+    
+<!--    <appender name="FILE" class="ch.qos.logback.core.FileAppender">
+        <file>/home/sids/logs/Test.log</file>
+        <append>true</append>
+        <encoder class="com.kolychev.utils.blocklogger.layout.BlockloggerPatternLayoutEncoder">
+            <pattern>${defaultPattern}</pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+             daily rollover 
+            <fileNamePattern>${LOGS_DIR}/Configurator.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <timeBasedFileNamingAndTriggeringPolicy
+                    class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                 or whenever the file size reaches 50MB 
+                <maxFileSize>50MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+             keep 5 days' worth of history 
+            <maxHistory>5</maxHistory>
+        </rollingPolicy>
+    </appender>-->
+
+    <!-- Root Logger -->
+    <root level="TRACE">
+        <appender-ref ref="CONSOLE"/>
+        <!--<appender-ref ref="FILE"/>-->
+    </root>
+</configuration>
