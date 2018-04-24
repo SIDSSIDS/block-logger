@@ -3,6 +3,8 @@ package com.kolychev.utils.blocklogger.logger;
 import com.kolychev.utils.blocklogger.logger.markers.CloseMarker;
 import com.kolychev.utils.blocklogger.logger.markers.StartMarker;
 import java.io.Closeable;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Predicate;
@@ -29,17 +31,21 @@ public class LogBlock implements Closeable {
     
     private static final LogBlock EMPTY = new LogBlock(null, null, null, null);
     
-    private final Marker startMarker = new StartMarker();
-    private final Marker closeMarker = new CloseMarker();
-    
-    private final Level  level;
-    private final Logger logger;
-    private final String title;
+    private final Level     level;
+    private       Level     disposeLevel;
+    private final Logger    logger;
+    private final String    title;
+    private final Instant   start;
+    private       Throwable exception;
+    private       String    result;
+    private       boolean   skip = false;
     
     private LogBlock(Logger logger, Level level, String title, String params) {
-        this.logger = logger;
-        this.title  = title;
-        this.level  = level;
+        this.logger       = logger;
+        this.title        = title;
+        this.level        = level;
+        this.start        = Instant.now();
+        this.disposeLevel = level;
         initialize(params);
     }
     
@@ -47,32 +53,123 @@ public class LogBlock implements Closeable {
         return logger == null;
     }
     
+    public void skip() {
+        skip = true;
+    }
+    
+    public void cancelSkipping() {
+        skip = false;
+    }
+    
+    public void reportSuccess() {
+        reportSuccess(null);
+    }
+    
+    public void reportSuccess(String message) {
+        result = message;
+        disposeLevel = level;
+    }
+    
+    public void reportSuccess(String message, Object... params) {
+        result = message != null ? String.format(message, params) : message;
+        disposeLevel = level;
+    }
+    
+    public void reportTrace() {
+        reportTrace(null);
+    }
+    
+    public void reportTrace(String message) {
+        result = message;
+        disposeLevel = Level.TRACE;
+    }
+    
+    public void reportTrace(String message, Object... params) {
+        result = message != null ? String.format(message, params) : message;
+        disposeLevel = Level.TRACE;
+    }
+    
+    public void reportDebug() {
+        reportDebug(null);
+    }
+    
+    public void reportDebug(String message) {
+        result = message;
+        disposeLevel = Level.DEBUG;
+    }
+    
+    public void reportDebug(String message, Object... params) {
+        result = message != null ? String.format(message, params) : message;
+        disposeLevel = Level.DEBUG;
+    }
+    
+    public void reportInfo() {
+        reportInfo(null);
+    }
+    
+    public void reportInfo(String message) {
+        result = message;
+        disposeLevel = Level.INFO;
+    }
+    
+    public void reportInfo(String message, Object... params) {
+        result = message != null ? String.format(message, params) : message;
+        disposeLevel = Level.INFO;
+    }
+    
+    public void reportWarning() {
+        reportWarning(null);
+    }
+    
+    public void reportWarning(String message) {
+        result = message;
+        disposeLevel = Level.WARN;
+    }
+    
+    public void reportWarning(String message, Object... params) {
+        result = message != null ? String.format(message, params) : message;
+        disposeLevel = Level.WARN;
+    }
+    
+    public void reportError() {
+        reportError("Error");
+    }
+    
+    public void reportError(String message) {
+        result = message;
+        disposeLevel = Level.ERROR;
+    }
+    
+    public void reportError(String message, Object... params) {
+        result = message != null ? String.format(message, params) : message;
+        disposeLevel = Level.ERROR;
+    }
+    
+    public LogBlock withException(Throwable ex) {
+        exception = ex;
+        return this;
+    }
+    
     @Override
     public void close() {
         if (!isEmptyBlock()) {
-            log(closeMarker, String.format("[-] %s", title));
+            log(disposeLevel, new CloseMarker(title, Duration.between(Instant.now(), start), result, exception, skip), "");
         }
     }
 
     private void initialize(String params) {
         if (!isEmptyBlock()) {
-            StringBuilder sb = new StringBuilder();
-            sb.append("[+] ").append(title);
-            if (params != null) {
-                sb.append(" (").append(params).append(")");
-            }
-            sb.append(": Started...");
-            log(startMarker, sb.toString());
+            log(level, new StartMarker(title, params), "");
         }
     }
     
-    private void log(Marker marker, String message) {
+    private void log(Level level, Marker marker, String message) {
         switch(level) {
-            case TRACE : logger.trace(marker, message); break;
-            case DEBUG : logger.debug(marker, message); break;
-            case INFO  : logger.info(marker, message); break;
-            case WARN  : logger.warn(marker, message); break;
-            case ERROR : logger.error(marker, message); break;
+            case TRACE : logger.trace(marker, message, exception); break;
+            case DEBUG : logger.debug(marker, message, exception); break;
+            case INFO  : logger.info(marker, message, exception); break;
+            case WARN  : logger.warn(marker, message, exception); break;
+            case ERROR : logger.error(marker, message, exception); break;
         }
     }
 

@@ -1,14 +1,15 @@
-package com.kolychev.utils.blocklogger.layout;
+package com.kolychev.utils.blocklogger.layout.tools;
 
+import ch.qos.logback.classic.spi.ILoggingEvent;
 import com.google.common.base.Strings;
 
 public class Indent {
     
     public  static final String CONTEXT_KEY = "com.kolychev.utils.blocklogger.layout.Indent";
-    private static final String TAB_STRING = "  ";
+    private static final String TAB_STRING = "    ";
 
-    private final ThreadLocal<Integer> level = new InheritableThreadLocal<>();
-    private final ThreadLocal<String>  pad   = new InheritableThreadLocal<>();
+    private final ThreadLocal<Integer>       level         = new InheritableThreadLocal<>();
+    private final ThreadLocal<String>        pad           = new InheritableThreadLocal<>();
     
     public Indent() {
         level.set(0);

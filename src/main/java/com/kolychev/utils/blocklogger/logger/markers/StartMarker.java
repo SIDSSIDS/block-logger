@@ -1,9 +1,18 @@
 package com.kolychev.utils.blocklogger.logger.markers;
 
-public class StartMarker extends BaseMarker {
+import java.util.Optional;
 
-    public StartMarker() {
-        super(StartMarker.class.getSimpleName());
+public class StartMarker extends BaseMarker {
+    
+    private final Optional<String> params;
+
+    public StartMarker(String title, String params) {
+        super(StartMarker.class.getSimpleName(), title);
+        this.params = Optional.ofNullable(params);
+    }
+
+    public Optional<String> getParams() {
+        return params;
     }
 
 }

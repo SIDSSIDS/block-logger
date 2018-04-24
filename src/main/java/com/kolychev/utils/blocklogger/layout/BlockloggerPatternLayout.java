@@ -1,34 +1,35 @@
 package com.kolychev.utils.blocklogger.layout;
 
-import ch.qos.logback.classic.PatternLayout;
+import com.kolychev.utils.blocklogger.layout.tools.Indent;
 import ch.qos.logback.classic.spi.ILoggingEvent;
-import com.kolychev.utils.blocklogger.logger.markers.CloseMarker;
-import com.kolychev.utils.blocklogger.logger.markers.StartMarker;
-import org.slf4j.Marker;
 
-public class BlockloggerPatternLayout extends PatternLayout {
+public class BlockloggerPatternLayout extends BaseBlockloggerPatternLayout {
 
-    private final Indent indent;
-    
     public BlockloggerPatternLayout(Indent indent) {
-        this.indent = indent;
-        
-        getInstanceConverterMap().put("m", BlockConverter.class.getName());
-        getInstanceConverterMap().put("msg", BlockConverter.class.getName());
-        getInstanceConverterMap().put("message", BlockConverter.class.getName());
+        super(indent);
     }
-
+    
     @Override
     public String doLayout(ILoggingEvent event) {
-        Marker marker = event.getMarker();
-        if (marker != null && marker instanceof CloseMarker) {
+        boolean closing = isClosing(event);
+        boolean opening = isOpening(event);
+        
+        if (opening) {
+            event = generateOpenBlockEvent(event, null);
+        }
+        if (closing) {
+            event = generateCloseBlockEvent(event);
+        }
+        
+        if (closing) {
             indent.decrement();
         }
         String result = super.doLayout(event);
-        if (marker != null && marker instanceof StartMarker) {
+        if (opening) {
             indent.increment();
         }
         return result;
     }
+    
 
 }
