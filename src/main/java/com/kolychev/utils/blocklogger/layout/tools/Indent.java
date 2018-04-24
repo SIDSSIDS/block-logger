@@ -1,6 +1,5 @@
 package com.kolychev.utils.blocklogger.layout.tools;
 
-import ch.qos.logback.classic.spi.ILoggingEvent;
 import com.google.common.base.Strings;
 
 public class Indent {
@@ -11,9 +10,11 @@ public class Indent {
     private final ThreadLocal<Integer>       level         = new InheritableThreadLocal<>();
     private final ThreadLocal<String>        pad           = new InheritableThreadLocal<>();
     
-    public Indent() {
-        level.set(0);
-        updatePad();
+    private void checkInit() {
+        if (level.get() == null) {
+            level.set(0);
+            updatePad();
+        }
     }
     
     private void updatePad() {
@@ -21,16 +22,19 @@ public class Indent {
     }
     
     public String get() {
+        checkInit();
         return pad.get();
     }
     
     public void increment() {
+        checkInit();
         int i = level.get();
         level.set(++i);
         updatePad();
     }
     
     public void decrement() {
+        checkInit();
         int i = level.get();
         level.set(--i);
         updatePad();
