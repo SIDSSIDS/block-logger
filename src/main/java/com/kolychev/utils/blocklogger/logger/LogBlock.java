@@ -61,88 +61,89 @@ public class LogBlock implements Closeable {
         skip = false;
     }
     
+    private void report(Level level) {
+        report(level, null);
+    }
+    
+    private void report(Level level, String message) {
+        result       = message;
+        disposeLevel = level;
+    }
+    
+    private void report(Level level, String message, Object... params) {
+        report(level, message != null ? String.format(message, params) : message);
+    }
+    
     public void reportSuccess() {
-        reportSuccess(null);
+        report(level);
     }
     
     public void reportSuccess(String message) {
-        result = message;
-        disposeLevel = level;
+        report(level, message);
     }
     
     public void reportSuccess(String message, Object... params) {
-        result = message != null ? String.format(message, params) : message;
-        disposeLevel = level;
+        report(level, message, params);
     }
     
     public void reportTrace() {
-        reportTrace(null);
+        report(Level.TRACE);
     }
     
     public void reportTrace(String message) {
-        result = message;
-        disposeLevel = Level.TRACE;
+        report(Level.TRACE, message);
     }
     
     public void reportTrace(String message, Object... params) {
-        result = message != null ? String.format(message, params) : message;
-        disposeLevel = Level.TRACE;
+        report(Level.TRACE, message, params);
     }
     
     public void reportDebug() {
-        reportDebug(null);
+        report(Level.DEBUG);
     }
     
     public void reportDebug(String message) {
-        result = message;
-        disposeLevel = Level.DEBUG;
+        report(Level.DEBUG, message);
     }
     
     public void reportDebug(String message, Object... params) {
-        result = message != null ? String.format(message, params) : message;
-        disposeLevel = Level.DEBUG;
+        report(Level.DEBUG, message, params);
     }
     
     public void reportInfo() {
-        reportInfo(null);
+        report(Level.INFO);
     }
     
     public void reportInfo(String message) {
-        result = message;
-        disposeLevel = Level.INFO;
+        report(Level.INFO, message);
     }
     
     public void reportInfo(String message, Object... params) {
-        result = message != null ? String.format(message, params) : message;
-        disposeLevel = Level.INFO;
+        report(Level.INFO, message, params);
     }
     
     public void reportWarning() {
-        reportWarning(null);
+        report(Level.WARN);
     }
     
     public void reportWarning(String message) {
-        result = message;
-        disposeLevel = Level.WARN;
+        report(Level.WARN, message);
     }
     
     public void reportWarning(String message, Object... params) {
-        result = message != null ? String.format(message, params) : message;
-        disposeLevel = Level.WARN;
+        report(Level.WARN, message, params);
     }
     
     public void reportError() {
-        reportError("Error");
+        report(Level.ERROR);
     }
     
     public void reportError(String message) {
-        result = message;
-        disposeLevel = Level.ERROR;
+        report(Level.ERROR, message);
     }
     
     public void reportError(String message, Object... params) {
-        result = message != null ? String.format(message, params) : message;
-        disposeLevel = Level.ERROR;
+        report(Level.ERROR, message, params);
     }
     
     public LogBlock withException(Throwable ex) {

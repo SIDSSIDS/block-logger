@@ -16,7 +16,10 @@ public class BlockConverter extends MessageConverter {
     
     @Override
     public String convert(ILoggingEvent event) {
-        return String.format("%s%s", indent.get(), super.convert(event));
+        return new StringBuilder()
+                .append(indent.get())
+                .append(super.convert(event))
+                .toString();
     }
 
 }
