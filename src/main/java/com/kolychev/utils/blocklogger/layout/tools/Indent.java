@@ -1,6 +1,6 @@
 package com.kolychev.utils.blocklogger.layout.tools;
 
-import com.google.common.base.Strings;
+import java.util.stream.IntStream;
 
 public class Indent {
     
@@ -17,8 +17,14 @@ public class Indent {
         }
     }
     
+    private String repeat(String str, int times) {
+        StringBuilder builder = new StringBuilder(str.length() * times);
+        IntStream.range(0, times).forEach(i -> builder.append(str));
+        return builder.toString();
+    }
+    
     private void updatePad() {
-        pad.set(Strings.repeat(TAB_STRING, level.get()));
+        pad.set(repeat(TAB_STRING, level.get()));
     }
     
     public String get() {

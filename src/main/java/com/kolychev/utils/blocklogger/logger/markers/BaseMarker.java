@@ -1,10 +1,10 @@
 package com.kolychev.utils.blocklogger.logger.markers;
 
-import com.google.common.base.Objects;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Objects;
 import org.slf4j.Marker;
 
 public class BaseMarker implements Marker {
@@ -96,7 +96,7 @@ public class BaseMarker implements Marker {
         if (obj == null) return false;
         if (getClass() != obj.getClass()) return false;
         final BaseMarker other = (BaseMarker) obj;
-        return Objects.equal(this.name, other.name);
+        return Objects.equals(this.name, other.name);
     }
 
     @Override
