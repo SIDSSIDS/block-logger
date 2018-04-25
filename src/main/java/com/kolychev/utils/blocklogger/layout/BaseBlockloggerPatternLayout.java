@@ -11,9 +11,10 @@ import com.kolychev.utils.blocklogger.logger.markers.StartMarker;
 import java.time.Duration;
 import org.slf4j.Marker;
 
-public class BaseBlockloggerPatternLayout extends PatternLayout {
+public abstract class BaseBlockloggerPatternLayout extends PatternLayout {
     
-    protected final Indent indent;
+    protected final Indent  indent;
+    protected       boolean profiling;
 
     public BaseBlockloggerPatternLayout(Indent indent) {
         this.indent = indent;
@@ -21,6 +22,14 @@ public class BaseBlockloggerPatternLayout extends PatternLayout {
         getInstanceConverterMap().put("m", BlockConverter.class.getName());
         getInstanceConverterMap().put("msg", BlockConverter.class.getName());
         getInstanceConverterMap().put("message", BlockConverter.class.getName());
+    }
+
+    public void setProfiling(boolean profiling) {
+        this.profiling = profiling;
+    }
+
+    public boolean isProfiling() {
+        return profiling;
     }
     
     protected boolean isOpening(ILoggingEvent event) {
@@ -57,7 +66,7 @@ public class BaseBlockloggerPatternLayout extends PatternLayout {
             message.append("[+] ");
         }
         message.append(marker.getTitle());
-        if (emptyBlock) {
+        if (emptyBlock && profiling) {
             message.append(" (").append(getDuration(nextEvent).toString()).append(")");
         }
         if (marker.getParams().isPresent()) {
@@ -79,7 +88,10 @@ public class BaseBlockloggerPatternLayout extends PatternLayout {
         CloseMarker   marker  = CloseMarker.class.cast(closeEvent.getMarker());
         StringBuilder message = new StringBuilder();
         
-        message.append("[-] ").append(marker.getTitle()).append(" (").append(marker.getDuration().toString()).append(")");
+        message.append("[-] ").append(marker.getTitle());
+        if (profiling) {
+            message.append(" (").append(marker.getDuration().toString()).append(")");
+        }
         String closeMsg = generateCloseBlockResult(closeEvent);
         if (closeMsg.length() > 0) {
             message.append(": ").append(closeMsg);
