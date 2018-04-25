@@ -3,6 +3,7 @@ package com.kolychev.utils.blocklogger.layout;
 import com.kolychev.utils.blocklogger.layout.tools.Indent;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import com.kolychev.utils.blocklogger.logger.markers.CloseMarker;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class CollapsibleBlockloggerPatternLayout extends BaseBlockloggerPatternLayout {
 
@@ -28,6 +29,7 @@ public class CollapsibleBlockloggerPatternLayout extends BaseBlockloggerPatternL
         
         if (opening) {
             blockOpen.pushEvent(event);
+            indent.increment();
         }
         
         if (openBlockMessage == null
@@ -56,8 +58,9 @@ public class CollapsibleBlockloggerPatternLayout extends BaseBlockloggerPatternL
     private String getOpeningMessage(ILoggingEvent nextEvent) {
         ILoggingEvent openBlockEvent = blockOpen.popEvent();
         if (openBlockEvent != null) {
+            openBlockEvent = generateOpenBlockEvent(openBlockEvent, nextEvent);
+            indent.decrement();
             try {
-                openBlockEvent = generateOpenBlockEvent(openBlockEvent, nextEvent);
                 return super.doLayout(openBlockEvent);
             } finally {
                 indent.increment();
@@ -78,18 +81,41 @@ public class CollapsibleBlockloggerPatternLayout extends BaseBlockloggerPatternL
     
     private class BlockOpeningEvent {
         
-        private final ThreadLocal<ILoggingEvent> openEvent = new InheritableThreadLocal<>();
+        private final ThreadLocal<Element> openEvent = new InheritableThreadLocal<>();
         
         public void pushEvent(ILoggingEvent event) {
-            openEvent.set(event);
+            openEvent.set(new Element(event));
         }
 
         public ILoggingEvent popEvent() {
-            ILoggingEvent event = openEvent.get();
+            Element e = openEvent.get();
             openEvent.remove();
+            if (e != null && !e.consumed()) {
+                return e.getEvent();
+            } else {
+                return null;
+            }
+        }
+
+    }
+    
+    private class Element {
+        
+        private final ILoggingEvent event;
+        private final AtomicBoolean consumed = new AtomicBoolean(false);
+
+        public Element(ILoggingEvent event) {
+            this.event = event;
+        }
+
+        public ILoggingEvent getEvent() {
             return event;
         }
 
+        public boolean consumed() {
+            return consumed.getAndSet(true);
+        }
+        
     }
     
 }

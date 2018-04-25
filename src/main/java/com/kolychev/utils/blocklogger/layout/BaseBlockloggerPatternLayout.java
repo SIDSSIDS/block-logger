@@ -69,7 +69,7 @@ public class BaseBlockloggerPatternLayout extends PatternLayout {
                 message.append(": ").append(closeMsg);
             }
         } else {
-            message.append(" Started...");
+            message.append(": Started...");
         }
         
         return message.toString();
