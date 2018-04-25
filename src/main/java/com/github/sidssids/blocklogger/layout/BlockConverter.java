@@ -1,6 +1,6 @@
-package com.kolychev.utils.blocklogger.layout;
+package com.github.sidssids.blocklogger.layout;
 
-import com.kolychev.utils.blocklogger.layout.tools.Indent;
+import com.github.sidssids.blocklogger.layout.tools.Indent;
 import ch.qos.logback.classic.pattern.MessageConverter;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 

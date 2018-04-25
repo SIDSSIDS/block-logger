@@ -1,7 +1,7 @@
-package com.kolychev.utils.blocklogger.logger;
+package com.github.sidssids.blocklogger.logger;
 
-import com.kolychev.utils.blocklogger.logger.markers.CloseMarker;
-import com.kolychev.utils.blocklogger.logger.markers.StartMarker;
+import com.github.sidssids.blocklogger.logger.markers.CloseMarker;
+import com.github.sidssids.blocklogger.logger.markers.StartMarker;
 import java.io.Closeable;
 import java.time.Duration;
 import java.time.Instant;

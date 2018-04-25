@@ -1,4 +1,4 @@
-package com.kolychev.utils.blocklogger.logger.markers;
+package com.github.sidssids.blocklogger.logger.markers;
 
 import java.util.Collections;
 import java.util.HashMap;

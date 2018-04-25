@@ -1,13 +1,13 @@
-package com.kolychev.utils.blocklogger.layout;
+package com.github.sidssids.blocklogger.layout;
 
-import com.kolychev.utils.blocklogger.layout.tools.Indent;
+import com.github.sidssids.blocklogger.layout.tools.Indent;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.PatternLayout;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.spi.IThrowableProxy;
-import com.kolychev.utils.blocklogger.layout.tools.LoggingEventCloner;
-import com.kolychev.utils.blocklogger.logger.markers.CloseMarker;
-import com.kolychev.utils.blocklogger.logger.markers.StartMarker;
+import com.github.sidssids.blocklogger.layout.tools.LoggingEventCloner;
+import com.github.sidssids.blocklogger.logger.markers.CloseMarker;
+import com.github.sidssids.blocklogger.logger.markers.StartMarker;
 import java.time.Duration;
 import org.slf4j.Marker;
 

@@ -1,7 +1,7 @@
-package com.kolychev.utils.blocklogger.encoder;
+package com.github.sidssids.blocklogger.encoder;
 
-import com.kolychev.utils.blocklogger.layout.BaseBlockloggerPatternLayout;
-import com.kolychev.utils.blocklogger.layout.CollapsibleBlockloggerPatternLayout;
+import com.github.sidssids.blocklogger.layout.BaseBlockloggerPatternLayout;
+import com.github.sidssids.blocklogger.layout.CollapsibleBlockloggerPatternLayout;
 
 public class CollapsibleBlockloggerPatternLayoutEncoder extends BaseBlockloggerPatternLayoutEncoder {
 

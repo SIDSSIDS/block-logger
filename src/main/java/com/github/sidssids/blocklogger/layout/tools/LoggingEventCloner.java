@@ -1,4 +1,4 @@
-package com.kolychev.utils.blocklogger.layout.tools;
+package com.github.sidssids.blocklogger.layout.tools;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.spi.ILoggingEvent;
