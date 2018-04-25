@@ -5,11 +5,24 @@ import java.util.stream.IntStream;
 public class Indent {
     
     public  static final String CONTEXT_KEY = "com.kolychev.utils.blocklogger.layout.Indent";
-    private static final String TAB_STRING = "    ";
-
-    private final ThreadLocal<Integer>       level         = new InheritableThreadLocal<>();
-    private final ThreadLocal<String>        pad           = new InheritableThreadLocal<>();
+    private static final String DEFAULT_TAB_STRING = "    ";
     
+    private final ThreadLocal<Integer> level = new InheritableThreadLocal<>();
+    private final ThreadLocal<String>  pad   = new InheritableThreadLocal<>();
+    private       String               tabString;
+
+    public Indent() {
+        tabString = DEFAULT_TAB_STRING;
+    }
+
+    public String getTabString() {
+        return tabString;
+    }
+
+    public void setTabString(String tabString) {
+        this.tabString = tabString;
+    }
+
     private void checkInit() {
         if (level.get() == null) {
             level.set(0);
@@ -24,7 +37,7 @@ public class Indent {
     }
     
     private void updatePad() {
-        pad.set(repeat(TAB_STRING, level.get()));
+        pad.set(repeat(tabString, level.get()));
     }
     
     public String get() {

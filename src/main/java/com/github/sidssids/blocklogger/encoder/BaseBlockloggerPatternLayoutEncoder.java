@@ -16,6 +16,10 @@ public abstract class BaseBlockloggerPatternLayoutEncoder extends PatternLayoutE
         this.profiling = profiling;
     }
     
+    public void setTabString(String tabString) {
+        indent.setTabString(tabString);
+    }
+    
     @Override
     public void start() {
         BaseBlockloggerPatternLayout patternLayout = createPatternLayout();
