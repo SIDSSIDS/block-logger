@@ -50,6 +50,7 @@ public class BaseMarker implements Marker {
     }
 
     @Override
+    @Deprecated
     public boolean hasChildren() {
         return references != null && !references().isEmpty();
     }
