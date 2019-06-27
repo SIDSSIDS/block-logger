@@ -1,5 +1,7 @@
-Block-logger
-============
+# Block-logger
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.sidssids/block-logger/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.github.sidssids/block-logger)
+[![License](https://img.shields.io/github/license/sidssids/block-logger.svg)](https://opensource.org/licenses/MIT)
+
 Block-logger is an extention for [logback](https://logback.qos.ch) logging framework that allows the developer to use blocks of logs. For example:
 ```
 2018-04-25 11:24:01,173 [main      ] INFO  [+] Change name (personId=100 newName=Max): Started...
@@ -11,4 +13,18 @@ Block-logger is an extention for [logback](https://logback.qos.ch) logging frame
 2018-04-25 11:24:01,384 [main      ] INFO      [-] Store data (PT-0.101S): Result - saved
 2018-04-25 11:24:01,384 [main      ] INFO  [-] Change name (PT-0.217S)
 ```
-See [wiki](https://github.com/SIDSSIDS/block-logger/wiki) for usage
+Refer [wiki](https://github.com/SIDSSIDS/block-logger/wiki) for more Details
+
+| Stable Release Version | JDK Version compatibility | Release Date |
+| ------------- | ------------- | ------------|
+| 1.0.0  | 1.8+ | 2018-06-27 |
+
+## Maven Repository
+You can pull block-logger from the central maven repository, just add these to your `pom.xml` file:
+```xml
+<dependency>
+  <groupId>com.github.sidssids</groupId>
+  <artifactId>block-logger</artifactId>
+  <version>1.0.0</version>
+</dependency>
+```
