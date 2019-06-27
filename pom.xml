@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.github.sidssids</groupId>
     <artifactId>block-logger</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.0</version>
     
     <name>Block logger</name>
     <description>Logger extention for creating blocks of logs</description>
@@ -35,7 +35,7 @@
         <connection>scm:git:git://github.com/SIDSSIDS/block-logger.git</connection>
         <developerConnection>scm:git:git://github.com/SIDSSIDS/block-logger.git</developerConnection>
         <url>https://github.com/SIDSSIDS/block-logger</url>
-        <tag>HEAD</tag>
+        <tag>block-logger-1.0.0</tag>
     </scm>
 
     <properties>
