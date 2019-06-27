@@ -154,7 +154,7 @@ public class LogBlock implements Logger, Closeable {
     @Override
     public void close() {
         if (!isEmptyBlock()) {
-            log(disposeLevel, new CloseMarker(title, Duration.between(Instant.now(), start), result, exception, skip), "");
+            log(disposeLevel, new CloseMarker(title, Duration.between(start, Instant.now()), result, exception, skip), "");
         }
     }
 
