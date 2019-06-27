@@ -55,8 +55,10 @@ public class Indent {
     public void decrement() {
         checkInit();
         int i = level.get();
-        level.set(--i);
-        updatePad();
+        if (i > 0) {
+            level.set(--i);
+            updatePad();
+        }
     }
     
 }
