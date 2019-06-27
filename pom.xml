@@ -52,6 +52,7 @@
         <version.maven-scm-api>1.11.2</version.maven-scm-api>
         <version.maven-source-plugin>3.1.0</version.maven-source-plugin>
         <version.maven-javadoc-plugin>3.1.0</version.maven-javadoc-plugin>
+        <version.maven-gpg-plugin>1.6</version.maven-gpg-plugin>
         
         <version.logback>1.2.3</version.logback>
     </properties>
@@ -181,4 +182,34 @@
         </repository>
     </distributionManagement>
     
+    <profiles>
+        <!-- GPG Signature on release -->
+        <profile>
+            <id>release-sign-artifacts</id>
+            <activation>
+                <property>
+                    <name>performRelease</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>${version.maven-gpg-plugin}</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
