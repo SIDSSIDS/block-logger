@@ -3,6 +3,7 @@ package com.github.sidssids.blocklogger.layout;
 import com.github.sidssids.blocklogger.layout.tools.Indent;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import com.github.sidssids.blocklogger.logger.markers.CloseMarker;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class CollapsibleBlockloggerPatternLayout extends BaseBlockloggerPatternLayout {
@@ -58,7 +59,7 @@ public class CollapsibleBlockloggerPatternLayout extends BaseBlockloggerPatternL
     private String getOpeningMessage(ILoggingEvent nextEvent) {
         ILoggingEvent openBlockEvent = blockOpen.popEvent();
         if (openBlockEvent != null) {
-            openBlockEvent = generateOpenBlockEvent(openBlockEvent, nextEvent);
+            openBlockEvent = generateOpenBlockEvent(openBlockEvent, Optional.of(nextEvent));
             indent.decrement();
             try {
                 return super.doLayout(openBlockEvent);

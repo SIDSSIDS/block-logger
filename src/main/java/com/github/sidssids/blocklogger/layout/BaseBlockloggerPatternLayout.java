@@ -9,6 +9,7 @@ import com.github.sidssids.blocklogger.layout.tools.LoggingEventCloner;
 import com.github.sidssids.blocklogger.logger.markers.CloseMarker;
 import com.github.sidssids.blocklogger.logger.markers.StartMarker;
 import java.time.Duration;
+import java.util.Optional;
 import org.slf4j.Marker;
 
 public abstract class BaseBlockloggerPatternLayout extends PatternLayout {
@@ -42,12 +43,16 @@ public abstract class BaseBlockloggerPatternLayout extends PatternLayout {
         return m != null && m instanceof CloseMarker;
     }
     
-    protected ILoggingEvent generateOpenBlockEvent(ILoggingEvent openEvent, ILoggingEvent nextEvent) {
-        boolean         emptyBlock = nextEvent != null && isClosing(nextEvent);
-        Level           level      = emptyBlock ? nextEvent.getLevel() : openEvent.getLevel();
-        long            timestamp  = nextEvent != null ? nextEvent.getTimeStamp() : openEvent.getTimeStamp();
+    protected ILoggingEvent generateOpenBlockEvent(ILoggingEvent openEvent) {
+        return generateOpenBlockEvent(openEvent, Optional.empty());
+    }
+    
+    protected ILoggingEvent generateOpenBlockEvent(ILoggingEvent openEvent, Optional<ILoggingEvent> nextEvent) {
+        boolean         emptyBlock = isEmptyBlock(nextEvent);
+        Level           level      = emptyBlock ? nextEvent.get().getLevel() : openEvent.getLevel();
+        long            timestamp  = nextEvent.isPresent() ? nextEvent.get().getTimeStamp() : openEvent.getTimeStamp();
         String          message    = generateOpenBlockMessage(openEvent, nextEvent);
-        IThrowableProxy throwable  = emptyBlock ? nextEvent.getThrowableProxy() : openEvent.getThrowableProxy();
+        IThrowableProxy throwable  = emptyBlock ? nextEvent.get().getThrowableProxy() : openEvent.getThrowableProxy();
         
         return LoggingEventCloner.clone(openEvent, level, message, timestamp, throwable);
     }
@@ -57,8 +62,12 @@ public abstract class BaseBlockloggerPatternLayout extends PatternLayout {
         return LoggingEventCloner.clone(event, msg);
     }
     
-    private String generateOpenBlockMessage(ILoggingEvent openEvent, ILoggingEvent nextEvent) {
-        boolean       emptyBlock = nextEvent != null && isClosing(nextEvent);
+    private boolean isEmptyBlock(Optional<ILoggingEvent> nextEvent) {
+        return nextEvent.isPresent() && isClosing(nextEvent.get());
+    }
+    
+    private String generateOpenBlockMessage(ILoggingEvent openEvent, Optional<ILoggingEvent> nextEvent) {
+        boolean       emptyBlock = isEmptyBlock(nextEvent);
         StartMarker   marker     = StartMarker.class.cast(openEvent.getMarker());
         StringBuilder message    = new StringBuilder();
         
@@ -67,13 +76,13 @@ public abstract class BaseBlockloggerPatternLayout extends PatternLayout {
         }
         message.append(marker.getTitle());
         if (emptyBlock && profiling) {
-            message.append(" (").append(getDuration(nextEvent).toString()).append(")");
+            message.append(" (").append(getDuration(nextEvent.get()).toString()).append(")");
         }
         if (marker.getParams().isPresent()) {
             message.append(" (").append(marker.getParams().get()).append(")");
         }
         if (emptyBlock) {
-            String closeMsg = generateCloseBlockResult(nextEvent);
+            String closeMsg = generateCloseBlockResult(nextEvent.get());
             if (closeMsg.length() > 0) {
                 message.append(": ").append(closeMsg);
             }

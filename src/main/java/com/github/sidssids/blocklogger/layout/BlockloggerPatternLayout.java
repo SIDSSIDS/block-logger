@@ -15,7 +15,7 @@ public class BlockloggerPatternLayout extends BaseBlockloggerPatternLayout {
         boolean opening = isOpening(event);
         
         if (opening) {
-            event = generateOpenBlockEvent(event, null);
+            event = generateOpenBlockEvent(event);
         }
         if (closing) {
             event = generateCloseBlockEvent(event);
