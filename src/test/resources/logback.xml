@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="com.github.sidssids.blocklogger.encoder.BlockloggerPatternLayoutEncoder">
+            <pattern>%d [%-10thread] %-5level %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="CONSOLE_WITH_DEFAULT_ENCODER" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d [%-10thread] %-5level msg:%msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- turn off root Logger -->
+    <root level="OFF" />
+    
+    <!-- test logger by string -->
+    <logger name="test-logger" level="TRACE">
+        <appender-ref ref="CONSOLE"/>
+    </logger>
+    
+    <!-- test logger by package -->
+    <logger name="com.github.sidssids.blocklogger.logger" level="TRACE">
+        <appender-ref ref="CONSOLE"/>
+    </logger>
+    
+    <!-- test logger with the default encoder -->
+    <logger name="logger-with-default-encoder" level="TRACE">
+        <appender-ref ref="CONSOLE_WITH_DEFAULT_ENCODER"/>
+    </logger>
+    
+</configuration>
