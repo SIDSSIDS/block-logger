@@ -5,6 +5,7 @@ import java.util.stream.IntStream;
 public class Indent {
     
     public  static final String CONTEXT_KEY = "com.kolychev.utils.blocklogger.layout.Indent";
+    public  static final String PROFILING_KEY = "com.kolychev.utils.blocklogger.layout.Profiling";
     private static final String DEFAULT_TAB_STRING = "    ";
     
     private final ThreadLocal<Integer> level = new InheritableThreadLocal<>();

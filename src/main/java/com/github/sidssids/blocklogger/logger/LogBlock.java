@@ -1,11 +1,16 @@
 package com.github.sidssids.blocklogger.logger;
 
+import ch.qos.logback.classic.LoggerContext;
+import com.github.sidssids.blocklogger.formatter.MarkerFormatter;
+import com.github.sidssids.blocklogger.layout.tools.Indent;
 import com.github.sidssids.blocklogger.logger.markers.CloseMarker;
 import com.github.sidssids.blocklogger.logger.markers.StartMarker;
 import java.io.Closeable;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Optional;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
 import org.slf4j.event.Level;
 
@@ -134,13 +139,20 @@ public class LogBlock implements Logger, Closeable {
     @Override
     public void close() {
         if (!isEmptyBlock()) {
-            log(disposeLevel, new CloseMarker(title, Duration.between(start, Instant.now()), result, exception, skip), "");
+            boolean profiling = isProfilingEnabled();
+            String message = MarkerFormatter.generateCloseBlockMessage(title, Duration.between(start, Instant.now()), profiling, Optional.ofNullable(result), Optional.ofNullable(exception));
+            log(disposeLevel, new CloseMarker(), message);
         }
+    }
+    
+    private boolean isProfilingEnabled() {
+        return (boolean)((LoggerContext)LoggerFactory.getILoggerFactory()).getObject(Indent.PROFILING_KEY);
     }
 
     private void initialize(String params) {
         if (!isEmptyBlock()) {
-            log(level, new StartMarker(title, params), "");
+            String message = MarkerFormatter.generateOpenBlockMessage(title, Optional.ofNullable(params));
+            log(level, new StartMarker(), message);
         }
     }
     

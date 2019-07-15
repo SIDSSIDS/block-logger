@@ -6,6 +6,13 @@
         </encoder>
     </appender>
 
+    <appender name="CONSOLE_WITHOUT_PROFILING" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="com.github.sidssids.blocklogger.encoder.BlockloggerPatternLayoutEncoder">
+            <pattern>%d [%-10thread] %-5level %msg%n</pattern>
+            <!--profiling>false</profiling-->
+        </encoder>
+    </appender>
+    
     <appender name="CONSOLE_WITH_DEFAULT_ENCODER" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>%d [%-10thread] %-5level msg:%msg%n</pattern>
@@ -18,6 +25,11 @@
     <!-- test logger by string -->
     <logger name="test-logger" level="TRACE">
         <appender-ref ref="CONSOLE"/>
+    </logger>
+    
+    <!-- test logger without profiling -->
+    <logger name="test-logger-without-profiling" level="TRACE">
+        <appender-ref ref="CONSOLE_WITHOUT_PROFILING"/>
     </logger>
     
     <!-- test logger by package -->

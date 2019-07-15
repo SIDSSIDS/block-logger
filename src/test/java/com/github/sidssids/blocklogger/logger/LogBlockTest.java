@@ -308,31 +308,50 @@ public class LogBlockTest {
         cleanUpStreams(out);
     }
     
+    @Test
+    public void test_messageOutput_withoutEncoderConfiguration_withoutParams() {
+        ByteArrayOutputStream out = setUpOutStream();
+        
+        try (LogBlock log = LogBlockFactory.info("logger-with-default-encoder", "test block")) {
+            LoggerFactory.getLogger("logger-with-default-encoder").debug("message inside with param {}", "value");
+            log.reportError();
+        }
+
+        List<String> messages = Arrays.asList(out.toString().split("\\n"));
+        assertEquals(messages.size(), 3);
+        
+        LogEntry entry1 = LogEntry.parse(messages.get(0));
+        LogEntry entry2 = LogEntry.parse(messages.get(1));
+        LogEntry entry3 = LogEntry.parse(messages.get(2));
+        
+        assertEquals(entry1.level, "INFO");
+        assertEquals(entry1.message, "msg:[+] test block: Started...");
+        
+        assertEquals(entry2.level, "DEBUG");
+        assertEquals(entry2.message, "msg:message inside with param value");
+        
+        assertEquals(entry3.level, "ERROR");
+        assertTrue(entry3.message.matches("msg:\\[-\\] test block \\(PT[\\d\\.]+S\\)"), String.format("Wrong format: %s", entry3.message));
+
+        cleanUpStreams(out);
+    }
+    
+    
+    //TODO profiling property is global for all encoders... should think about it
 //    @Test
-//    public void test_messageOutput_withoutEncoderConfiguration_withoutParams() {
+//    public void test_blockEnd_empty_withoutProfiling() {
+//        LogBlock log = LogBlockFactory.info("test-logger-without-profiling", "test block");
+//        
 //        ByteArrayOutputStream out = setUpOutStream();
 //        
-//        try (LogBlock log = LogBlockFactory.info("logger-with-default-encoder", "test block")) {
-//            LoggerFactory.getLogger("logger-with-default-encoder").debug("message inside with param {}", "value");
-//            log.reportError();
-//        }
-//
+//        log.close();
+//        
 //        List<String> messages = Arrays.asList(out.toString().split("\\n"));
-//        assertEquals(messages.size(), 3);
-//        
-//        LogEntry entry1 = LogEntry.parse(messages.get(0));
-//        LogEntry entry2 = LogEntry.parse(messages.get(1));
-//        LogEntry entry3 = LogEntry.parse(messages.get(2));
-//        
-//        assertEquals(entry1.level, "INFO");
-//        assertEquals(entry1.message, "msg:[+] test block: Started...");
-//        
-//        assertEquals(entry2.level, "DEBUG");
-//        assertEquals(entry2.message, "msg:message inside with param value");
-//        
-//        assertEquals(entry3.level, "ERROR");
-//        assertTrue(entry3.message.matches("msg:\\[-\\] test block \\(PT[\\d\\.]+S\\)"), String.format("Wrong format: %s", entry3.message));
-//
+//        assertEquals(messages.size(), 1);
+//        LogEntry entry = LogEntry.parse(messages.get(0));
+//        assertEquals(entry.level, "INFO");
+//        assertNotNull(entry.message);
+//        assertEquals(entry.message, "[-] test block");
 //        cleanUpStreams(out);
 //    }
     
