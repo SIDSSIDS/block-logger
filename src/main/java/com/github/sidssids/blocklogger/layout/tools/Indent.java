@@ -4,43 +4,63 @@ import java.util.stream.IntStream;
 
 public class Indent {
     
-    public  static final String CONTEXT_KEY = "com.kolychev.utils.blocklogger.layout.Indent";
-    public  static final String PROFILING_KEY = "com.kolychev.utils.blocklogger.layout.Profiling";
-    private static final String DEFAULT_TAB_STRING = "    ";
+    public static class Defaults {
+        public static final boolean ENABLED    = true;
+        public static final String  TAB_STRING = "    ";
+    }
+    
+    public static class Properties {
+        public static final String ENABLED_PROPERTY    = "com.github.sidssids.blocklogger.indention.enabled";
+        public static final String TAB_STRING_PROPERTY = "com.github.sidssids.blocklogger.indention.tabString";
+    }
+    
+    private static final Indent instance = new Indent();
     
     private final ThreadLocal<Integer> level = new InheritableThreadLocal<>();
     private final ThreadLocal<String>  pad   = new InheritableThreadLocal<>();
-    private       String               tabString;
     
-    private static final Indent instance = new Indent();
+    private String  tabString;
+    private boolean enabled;
     
     public static Indent getInstance() {
         return instance;
     }
 
     private Indent() {
-        tabString = DEFAULT_TAB_STRING;
+        tabString = Defaults.TAB_STRING;
+        enabled = Defaults.ENABLED;
     }
 
     public String getTabString() {
         return tabString;
     }
     
-    public Indent reset() {
-        level.set(0);
-        updatePad();
-        return this;
-    }
-    
     public Indent resetTabString() {
-        tabString = DEFAULT_TAB_STRING;
+        tabString = Defaults.TAB_STRING;
         return this;
     }
 
     public void setTabString(String tabString) {
-        this.tabString = tabString;
+        this.tabString = isNull(tabString, Defaults.TAB_STRING);
     }
 
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(Boolean enabled) {
+        this.enabled = isNull(enabled, Defaults.ENABLED);
+    }
+    
+    public void setEnabled(String enabledStr) {
+        this.enabled = Boolean.parseBoolean(isNull(enabledStr, String.valueOf(Defaults.ENABLED)));
+    }
+    
+    public Indent resetEnabled() {
+        enabled = Defaults.ENABLED;
+        return this;
+    }
+            
     private void checkInit() {
         if (level.get() == null) {
             level.set(0);
@@ -58,25 +78,42 @@ public class Indent {
         pad.set(repeat(tabString, level.get()));
     }
     
+    public Indent reset() {
+        level.set(0);
+        updatePad();
+        return this;
+    }
+    
     public String get() {
-        checkInit();
-        return pad.get();
+        if (isEnabled()) {
+            checkInit();
+            return pad.get();
+        } else {
+            return "";
+        }
     }
     
     public void increment() {
-        checkInit();
-        int i = level.get();
-        level.set(++i);
-        updatePad();
-    }
-    
-    public void decrement() {
-        checkInit();
-        int i = level.get();
-        if (i > 0) {
-            level.set(--i);
+        if (isEnabled()) {
+            checkInit();
+            int i = level.get();
+            level.set(++i);
             updatePad();
         }
     }
     
+    public void decrement() {
+        if (isEnabled()) {
+            checkInit();
+            int i = level.get();
+            if (i > 0) {
+                level.set(--i);
+                updatePad();
+            }
+        }
+    }
+    
+    private <T> T isNull(T value, T defaultValue) {
+        return value != null ? value : defaultValue;
+    }
 }

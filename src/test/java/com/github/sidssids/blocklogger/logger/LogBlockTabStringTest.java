@@ -16,7 +16,7 @@ import org.testng.annotations.Test;
 
 import static org.testng.Assert.*;
 
-public class LogBlockWithoutIndentionTest {
+public class LogBlockTabStringTest {
     
     private final PrintStream defaultOut = System.out;
     
@@ -44,7 +44,7 @@ public class LogBlockWithoutIndentionTest {
             // Call context.reset() to clear any previous configuration, e.g. default
             // configuration. For multi-step configuration, omit calling context.reset().
             context.reset();
-            configurator.doConfigure(this.getClass().getResourceAsStream("/logback_without_indention.xml"));
+            configurator.doConfigure(this.getClass().getResourceAsStream("/logback_tab_string.xml"));
         } catch (JoranException je) {
             // StatusPrinter will handle this
             je.printStackTrace(defaultOut);
@@ -53,22 +53,22 @@ public class LogBlockWithoutIndentionTest {
     }
     
     @Test
-    public void test_indention_property_false() {
+    public void test_indention_property_null() {
         LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
         String indention = context.getProperty(Indent.Properties.ENABLED_PROPERTY);
-        assertEquals(indention, "false");
+        assertNull(indention);
+        assertEquals(Indent.getInstance().isEnabled(), Indent.Defaults.ENABLED);
     }
     
     @Test
-    public void test_tagString_property_default() {
+    public void test_tagString_property() {
         LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
         String tabString = context.getProperty(Indent.Properties.TAB_STRING_PROPERTY);
-        assertNull(tabString);
-        assertEquals(Indent.getInstance().getTabString(), Indent.Defaults.TAB_STRING);
+        assertEquals(Indent.getInstance().getTabString(), "|---");
     }
     
     @Test
-    public void test_withoutIndention() {
+    public void test_tabString() {
         
         ByteArrayOutputStream out = setUpOutStream();
         
@@ -96,10 +96,10 @@ public class LogBlockWithoutIndentionTest {
         assertEquals(entry_close.level,       "INFO");
         
         assertEquals(entry_start.message,       "[+] test block");
-        assertEquals(entry_start_inner.message, "[+] inner test block");
-        assertEquals(entry_msg.message,         "inside message 2");
-        assertEquals(entry_close_inner.message, "[-] inner test block");
-        assertEquals(entry_msg2.message,        "inside message");
+        assertEquals(entry_start_inner.message, "|---[+] inner test block");
+        assertEquals(entry_msg.message,         "|---|---inside message 2");
+        assertEquals(entry_close_inner.message, "|---[-] inner test block");
+        assertEquals(entry_msg2.message,        "|---inside message");
         assertEquals(entry_close.message,       "[-] test block");
         cleanUpStreams(out);
     }

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
 
-    <property scope="context" name="com.github.sidssids.blocklogger.indention.enabled" value="false"/>
+    <property scope="context" name="com.github.sidssids.blocklogger.indention.tabString" value="|---"/>
 
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder class="com.github.sidssids.blocklogger.encoder.BlockloggerPatternLayoutEncoder">

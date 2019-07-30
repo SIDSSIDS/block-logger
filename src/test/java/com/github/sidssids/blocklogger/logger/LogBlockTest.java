@@ -4,6 +4,7 @@ import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.joran.JoranConfigurator;
 import ch.qos.logback.core.joran.spi.JoranException;
 import ch.qos.logback.core.util.StatusPrinter;
+import com.github.sidssids.blocklogger.layout.tools.Indent;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -1019,7 +1020,17 @@ public class LogBlockTest {
     @Test
     public void test_indention_property_null() {
         LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
-        String indention = context.getProperty("com.github.sidssids.blocklogger.indention");
+        String indention = context.getProperty(Indent.Properties.ENABLED_PROPERTY);
         assertNull(indention);
+        assertEquals(Indent.getInstance().isEnabled(), Indent.Defaults.ENABLED);
     }
+    
+    @Test
+    public void test_tagString_property_default() {
+        LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
+        String tabString = context.getProperty(Indent.Properties.TAB_STRING_PROPERTY);
+        assertNull(tabString);
+        assertEquals(Indent.getInstance().getTabString(), Indent.Defaults.TAB_STRING);
+    }
+    
 }
