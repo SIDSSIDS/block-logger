@@ -59,25 +59,39 @@ public class LogBlockWithoutIndentionTest {
     }
     
     @Test
-    public void test_withoutProfiling() {
+    public void test_withoutIndention() {
         
         ByteArrayOutputStream out = setUpOutStream();
         
         try (LogBlock log = LogBlockFactory.info(this.getClass(), "test block")) {
+            try (LogBlock log2 = LogBlockFactory.info(this.getClass(), "inner test block")) {
+                LoggerFactory.getLogger(this.getClass()).debug("inside message 2");
+            }
             LoggerFactory.getLogger(this.getClass()).debug("inside message");
         }
         
         List<String> messages = Arrays.asList(out.toString().split("\\n"));
-        assertEquals(messages.size(), 3);
-        LogEntry entry_start = LogEntry.parse(messages.get(0));
-        LogEntry entry_msg   = LogEntry.parse(messages.get(1));
-        LogEntry entry_close = LogEntry.parse(messages.get(2));
-        assertEquals(entry_start.level, "INFO");
-        assertEquals(entry_msg.level,   "DEBUG");
-        assertEquals(entry_close.level, "INFO");
-        assertEquals(entry_start.message, "[+] test block");
-        assertEquals(entry_msg.message,   "inside message");
-        assertEquals(entry_close.message, "[-] test block");
+        assertEquals(messages.size(), 6);
+        LogEntry entry_start       = LogEntry.parse(messages.get(0));
+        LogEntry entry_start_inner = LogEntry.parse(messages.get(1));
+        LogEntry entry_msg         = LogEntry.parse(messages.get(2));
+        LogEntry entry_close_inner = LogEntry.parse(messages.get(3));
+        LogEntry entry_msg2        = LogEntry.parse(messages.get(4));
+        LogEntry entry_close       = LogEntry.parse(messages.get(5));
+        
+        assertEquals(entry_start.level,       "INFO");
+        assertEquals(entry_start_inner.level, "INFO");
+        assertEquals(entry_msg.level,         "DEBUG");
+        assertEquals(entry_msg2.level,        "DEBUG");
+        assertEquals(entry_close_inner.level, "INFO");
+        assertEquals(entry_close.level,       "INFO");
+        
+        assertEquals(entry_start.message,       "[+] test block");
+        assertEquals(entry_start_inner.message, "[+] inner test block");
+        assertEquals(entry_msg.message,         "inside message 2");
+        assertEquals(entry_close_inner.message, "[-] inner test block");
+        assertEquals(entry_msg2.message,        "inside message");
+        assertEquals(entry_close.message,       "[-] test block");
         cleanUpStreams(out);
     }
 
