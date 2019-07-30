@@ -4,20 +4,12 @@ import com.github.sidssids.blocklogger.layout.tools.Indent;
 import ch.qos.logback.classic.pattern.MessageConverter;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 
-public class BlockConverter extends MessageConverter {
-    
-    private Indent indent;
-
-    @Override
-    public void start() {
-        super.start();
-        indent = (Indent)getContext().getObject(Indent.CONTEXT_KEY);
-    }
+public class IndentedMessageConverter extends MessageConverter {
     
     @Override
     public String convert(ILoggingEvent event) {
         return new StringBuilder()
-                .append(indent.get())
+                .append(Indent.getInstance().get())
                 .append(super.convert(event))
                 .toString();
     }

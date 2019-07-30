@@ -14,6 +14,8 @@ import static org.testng.Assert.*;
 
 public class LogBlockTest {
     
+    private final PrintStream defaultOut = System.out;
+    
     private ByteArrayOutputStream setUpOutStream() {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         System.setOut(new PrintStream(out));
@@ -22,7 +24,7 @@ public class LogBlockTest {
     
     private void cleanUpStreams(ByteArrayOutputStream out) {
         try {
-            System.setOut(null);
+            System.setOut(defaultOut);
             out.close();
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -337,23 +339,22 @@ public class LogBlockTest {
     }
     
     
-    //TODO profiling property is global for all encoders... should think about it
-//    @Test
-//    public void test_blockEnd_empty_withoutProfiling() {
-//        LogBlock log = LogBlockFactory.info("test-logger-without-profiling", "test block");
-//        
-//        ByteArrayOutputStream out = setUpOutStream();
-//        
-//        log.close();
-//        
-//        List<String> messages = Arrays.asList(out.toString().split("\\n"));
-//        assertEquals(messages.size(), 1);
-//        LogEntry entry = LogEntry.parse(messages.get(0));
-//        assertEquals(entry.level, "INFO");
-//        assertNotNull(entry.message);
-//        assertEquals(entry.message, "[-] test block");
-//        cleanUpStreams(out);
-//    }
+    @Test
+    public void test_blockEnd_empty_withoutProfiling() {
+        LogBlock log = LogBlockFactory.info("test-logger-without-profiling", "test block");
+        
+        ByteArrayOutputStream out = setUpOutStream();
+        
+        log.close();
+        
+        List<String> messages = Arrays.asList(out.toString().split("\\n"));
+        assertEquals(messages.size(), 1);
+        LogEntry entry = LogEntry.parse(messages.get(0));
+        assertEquals(entry.level, "INFO");
+        assertNotNull(entry.message);
+        assertEquals(entry.message, "[-] test block");
+        cleanUpStreams(out);
+    }
     
     private static class LogEntry {
         

@@ -10,10 +10,12 @@ import org.slf4j.Marker;
 public class BaseMarker implements Marker {
     
     private final String name;
+    private final String title;
     private Map<String, Marker> references;
 
-    public BaseMarker(String name) {
+    public BaseMarker(String name, String title) {
         this.name  = name;
+        this.title = title;
     }
 
     private Map<String, Marker> references() {
@@ -21,6 +23,10 @@ public class BaseMarker implements Marker {
             references = new HashMap<>();
         }
         return references;
+    }
+
+    public String getTitle() {
+        return title;
     }
 
     @Override

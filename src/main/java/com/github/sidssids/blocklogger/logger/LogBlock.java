@@ -1,16 +1,12 @@
 package com.github.sidssids.blocklogger.logger;
 
-import ch.qos.logback.classic.LoggerContext;
 import com.github.sidssids.blocklogger.formatter.MarkerFormatter;
-import com.github.sidssids.blocklogger.layout.tools.Indent;
 import com.github.sidssids.blocklogger.logger.markers.CloseMarker;
 import com.github.sidssids.blocklogger.logger.markers.StartMarker;
 import java.io.Closeable;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Optional;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
 import org.slf4j.event.Level;
 
@@ -23,7 +19,6 @@ public class LogBlock implements Logger, Closeable {
     private final Instant   start;
     private       Throwable exception;
     private       String    result;
-    private       boolean   skip = false;
     
     LogBlock(Logger logger, Level level, String title, String params) {
         this.logger       = logger;
@@ -36,14 +31,6 @@ public class LogBlock implements Logger, Closeable {
     
     private boolean isEmptyBlock() {
         return logger == null;
-    }
-    
-    public void skip() {
-        skip = true;
-    }
-    
-    public void cancelSkipping() {
-        skip = false;
     }
     
     private void report(Level level) {
@@ -139,20 +126,20 @@ public class LogBlock implements Logger, Closeable {
     @Override
     public void close() {
         if (!isEmptyBlock()) {
-            boolean profiling = isProfilingEnabled();
-            String message = MarkerFormatter.generateCloseBlockMessage(title, Duration.between(start, Instant.now()), profiling, Optional.ofNullable(result), Optional.ofNullable(exception));
-            log(disposeLevel, new CloseMarker(), message);
+            CloseMarker marker = new CloseMarker(title)
+                    .withDuration(Duration.between(start, Instant.now()))
+                    .withResult(result)
+                    .withException(exception);
+            String message = MarkerFormatter.generateCloseBlockMessage(true, marker);
+            log(disposeLevel, marker, message);
         }
     }
     
-    private boolean isProfilingEnabled() {
-        return (boolean)((LoggerContext)LoggerFactory.getILoggerFactory()).getObject(Indent.PROFILING_KEY);
-    }
-
     private void initialize(String params) {
         if (!isEmptyBlock()) {
-            String message = MarkerFormatter.generateOpenBlockMessage(title, Optional.ofNullable(params));
-            log(level, new StartMarker(), message);
+            StartMarker marker  = new StartMarker(title).withParams(params);
+            String      message = MarkerFormatter.generateOpenBlockMessage(marker);
+            log(level, marker, message);
         }
     }
     

@@ -3,6 +3,8 @@ package com.github.sidssids.blocklogger.layout;
 import ch.qos.logback.classic.PatternLayout;
 import com.github.sidssids.blocklogger.layout.tools.Indent;
 import ch.qos.logback.classic.spi.ILoggingEvent;
+import com.github.sidssids.blocklogger.formatter.MarkerFormatter;
+import com.github.sidssids.blocklogger.layout.tools.BlockLoggingEventProxy;
 import com.github.sidssids.blocklogger.logger.markers.CloseMarker;
 import com.github.sidssids.blocklogger.logger.markers.StartMarker;
 import org.slf4j.Marker;
@@ -10,24 +12,38 @@ import org.slf4j.Marker;
 public class BlockloggerPatternLayout extends PatternLayout {
     
     protected boolean profiling;
-    private final Indent  indent;
 
-    public BlockloggerPatternLayout(Indent indent) {
-        this.indent = indent;
-        
-        getInstanceConverterMap().put("m", BlockConverter.class.getName());
-        getInstanceConverterMap().put("msg", BlockConverter.class.getName());
-        getInstanceConverterMap().put("message", BlockConverter.class.getName());
+    public BlockloggerPatternLayout() {
+        getInstanceConverterMap().put("m", IndentedMessageConverter.class.getName());
+        getInstanceConverterMap().put("msg", IndentedMessageConverter.class.getName());
+        getInstanceConverterMap().put("message", IndentedMessageConverter.class.getName());
+    }
+    
+    private BlockLoggingEventProxy proxy(ILoggingEvent event) {
+        return new BlockLoggingEventProxy(event, generateMessage(event));
+    }
+    
+    public String generateMessage(ILoggingEvent event) {
+        if (isOpening(event)) {
+            return MarkerFormatter.generateOpenBlockMessage((StartMarker)event.getMarker());
+        } else if (isClosing(event)) {
+            return MarkerFormatter.generateCloseBlockMessage(profiling, (CloseMarker)event.getMarker());
+        } else {
+            return event.getMessage();
+        }
     }
     
     @Override
     public String doLayout(ILoggingEvent event) {
+        if (isOpeningOrClosingEvent(event)) {
+            event = proxy(event);
+        }
         if (isClosing(event)) {
-            indent.decrement();
+            Indent.getInstance().decrement();
         }
         String result = super.doLayout(event);
         if (isOpening(event)) {
-            indent.increment();
+            Indent.getInstance().increment();
         }
         return result;
     }
@@ -35,11 +51,12 @@ public class BlockloggerPatternLayout extends PatternLayout {
     public void setProfiling(boolean profiling) {
         this.profiling = profiling;
     }
-
-    public boolean isProfiling() {
-        return profiling;
-    }
     
+    private boolean isOpeningOrClosingEvent(ILoggingEvent event) {
+        Marker m = event.getMarker();
+        return m != null && (m instanceof StartMarker || m instanceof CloseMarker);
+    }
+
     private boolean isOpening(ILoggingEvent event) {
         Marker m = event.getMarker();
         return m != null && m instanceof StartMarker;
@@ -50,8 +67,4 @@ public class BlockloggerPatternLayout extends PatternLayout {
         return m != null && m instanceof CloseMarker;
     }
     
-    public Indent getIndent() {
-        return indent;
-    }
-
 }

@@ -1,9 +1,15 @@
 package com.github.sidssids.blocklogger.formatter;
 
+import com.github.sidssids.blocklogger.logger.markers.CloseMarker;
+import com.github.sidssids.blocklogger.logger.markers.StartMarker;
 import java.time.Duration;
 import java.util.Optional;
 
 public class MarkerFormatter {
+    
+    public static String generateOpenBlockMessage(StartMarker marker) {
+        return generateOpenBlockMessage(marker.getTitle(), marker.getParams());
+    }
     
     public static String generateOpenBlockMessage(String title, Optional<String> params) {
         StringBuilder message = new StringBuilder();
@@ -16,6 +22,10 @@ public class MarkerFormatter {
         message.append(": Started...");
         
         return message.toString();
+    }
+    
+    public static String generateCloseBlockMessage(boolean profiling, CloseMarker marker) {
+        return generateCloseBlockMessage(marker.getTitle(), marker.getDuration(), profiling, marker.getResult(), marker.getException());
     }
     
     public static String generateCloseBlockMessage(String title, Duration duration, boolean profiling, Optional<String> result, Optional<Throwable> exception) {

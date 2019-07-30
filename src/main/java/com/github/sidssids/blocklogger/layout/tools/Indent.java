@@ -11,13 +11,30 @@ public class Indent {
     private final ThreadLocal<Integer> level = new InheritableThreadLocal<>();
     private final ThreadLocal<String>  pad   = new InheritableThreadLocal<>();
     private       String               tabString;
+    
+    private static final Indent instance = new Indent();
+    
+    public static Indent getInstance() {
+        return instance;
+    }
 
-    public Indent() {
+    private Indent() {
         tabString = DEFAULT_TAB_STRING;
     }
 
     public String getTabString() {
         return tabString;
+    }
+    
+    public Indent reset() {
+        level.set(0);
+        updatePad();
+        return this;
+    }
+    
+    public Indent resetTabString() {
+        tabString = DEFAULT_TAB_STRING;
+        return this;
     }
 
     public void setTabString(String tabString) {

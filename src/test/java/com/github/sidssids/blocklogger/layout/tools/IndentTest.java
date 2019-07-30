@@ -7,7 +7,7 @@ public class IndentTest {
 
     @Test
     public void test_increment() {
-        Indent i = new Indent();
+        Indent i = Indent.getInstance().reset().resetTabString();
         assertEquals(i.get(), "");
         
         i.increment();
@@ -19,7 +19,7 @@ public class IndentTest {
 
     @Test
     public void test_decrement() {
-        Indent i = new Indent();
+        Indent i = Indent.getInstance().reset().resetTabString();
         i.increment();
         i.increment();
         assertEquals(i.get(), "        ");
@@ -36,7 +36,7 @@ public class IndentTest {
     
     @Test
     public void test_tabString() {
-        Indent i = new Indent();
+        Indent i = Indent.getInstance().reset().resetTabString();
         
         i.setTabString("--");
         assertEquals(i.get(), "");
@@ -53,7 +53,7 @@ public class IndentTest {
     
     @Test
     public void test_threadInheritance() throws InterruptedException {
-        Indent i = new Indent();
+        Indent i = Indent.getInstance().reset().resetTabString();
         
         i.increment();
         i.increment();
