@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.IntStream;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
 
@@ -137,6 +138,66 @@ public class LogBlockTest {
         assertEquals(entry2.level, "DEBUG");
         assertNotNull(entry2.message);
         assertTrue(entry2.message.matches("\\[-\\] test block \\(PT[\\d\\.]+S\\): report_param=report_value"));
+        
+        cleanUpStreams(out);
+    }
+    
+    @Test
+    public void test_blockEnd_reportException_withoutResult() {
+        
+        RuntimeException testEx = new RuntimeException("test exception");
+        ByteArrayOutputStream out = setUpOutStream();
+        
+        try (LogBlock log = LogBlockFactory.info(LogBlockTest.class, "test block")) {
+            log.withException(testEx)
+                    .reportError();
+        }
+        
+        List<String> messages = Arrays.asList(out.toString().split("\\n"));
+        assertEquals(messages.size(), 3 + testEx.getStackTrace().length);
+        
+        LogEntry entry_start = LogEntry.parse(messages.get(0));
+        LogEntry entry_close = LogEntry.parse(messages.get(1));
+        
+        assertEquals(entry_start.level, "INFO");
+        assertEquals(entry_start.message, "[+] test block");
+        
+        assertEquals(entry_close.level, "ERROR");
+        assertTrue(entry_close.message.matches("\\[-\\] test block \\(PT[\\d\\.]+S\\): Exception: " + testEx.toString()), "actual message: " + entry_close.message);
+        
+        assertEquals(messages.get(2), testEx.toString());
+        IntStream.range(0, testEx.getStackTrace().length)
+                .forEach(i -> assertEquals(messages.get(3 + i).trim(), "at " + testEx.getStackTrace()[i]));
+        
+        cleanUpStreams(out);
+    }
+    
+    @Test
+    public void test_blockEnd_reportException_withResult() {
+        
+        RuntimeException testEx = new RuntimeException("test exception");
+        ByteArrayOutputStream out = setUpOutStream();
+        
+        try (LogBlock log = LogBlockFactory.info(LogBlockTest.class, "test block")) {
+            log.withException(testEx)
+                    .reportError("error_result=%s", "error_value");
+        }
+        
+        List<String> messages = Arrays.asList(out.toString().split("\\n"));
+        assertEquals(messages.size(), 3 + testEx.getStackTrace().length);
+        
+        LogEntry entry_start = LogEntry.parse(messages.get(0));
+        LogEntry entry_close = LogEntry.parse(messages.get(1));
+        
+        assertEquals(entry_start.level, "INFO");
+        assertEquals(entry_start.message, "[+] test block");
+        
+        assertEquals(entry_close.level, "ERROR");
+        assertTrue(entry_close.message.matches("\\[-\\] test block \\(PT[\\d\\.]+S\\): error_result=error_value; Exception: " + testEx.toString()), "actual message: " + entry_close.message);
+        
+        assertEquals(messages.get(2), testEx.toString());
+        IntStream.range(0, testEx.getStackTrace().length)
+                .forEach(i -> assertEquals(messages.get(3 + i).trim(), "at " + testEx.getStackTrace()[i]));
         
         cleanUpStreams(out);
     }
@@ -338,24 +399,602 @@ public class LogBlockTest {
         cleanUpStreams(out);
     }
     
-    
     @Test
-    public void test_blockEnd_empty_withoutProfiling() {
-        LogBlock log = LogBlockFactory.info("test-logger-without-profiling", "test block");
+    public void test_withoutProfiling() {
+        
+        String loggerName = "test-logger-without-profiling";
         
         ByteArrayOutputStream out = setUpOutStream();
         
-        log.close();
+        try (LogBlock log = LogBlockFactory.info(loggerName, "test block")) {
+            LoggerFactory.getLogger(loggerName).debug("inside message");
+        }
         
         List<String> messages = Arrays.asList(out.toString().split("\\n"));
-        assertEquals(messages.size(), 1);
-        LogEntry entry = LogEntry.parse(messages.get(0));
-        assertEquals(entry.level, "INFO");
-        assertNotNull(entry.message);
-        assertEquals(entry.message, "[-] test block");
+        assertEquals(messages.size(), 3);
+        LogEntry entry_start = LogEntry.parse(messages.get(0));
+        LogEntry entry_msg   = LogEntry.parse(messages.get(1));
+        LogEntry entry_close = LogEntry.parse(messages.get(2));
+        assertEquals(entry_start.level, "INFO");
+        assertEquals(entry_msg.level,   "DEBUG");
+        assertEquals(entry_close.level, "INFO");
+        assertEquals(entry_start.message, "[+] test block");
+        assertEquals(entry_msg.message,   "    inside message");
+        assertEquals(entry_close.message, "[-] test block");
         cleanUpStreams(out);
     }
     
+    @Test
+    public void test_withoutProfiling_withParams() {
+        
+        String loggerName = "test-logger-without-profiling";
+        
+        ByteArrayOutputStream out = setUpOutStream();
+        
+        try (LogBlock log = LogBlockFactory.info(loggerName, "test block", "param1=%s", "value1")) {
+            LoggerFactory.getLogger(loggerName).debug("inside message");
+        }
+        
+        List<String> messages = Arrays.asList(out.toString().split("\\n"));
+        assertEquals(messages.size(), 3);
+        LogEntry entry_start = LogEntry.parse(messages.get(0));
+        LogEntry entry_msg   = LogEntry.parse(messages.get(1));
+        LogEntry entry_close = LogEntry.parse(messages.get(2));
+        assertEquals(entry_start.level, "INFO");
+        assertEquals(entry_msg.level,   "DEBUG");
+        assertEquals(entry_close.level, "INFO");
+        assertEquals(entry_start.message, "[+] test block (param1=value1)");
+        assertEquals(entry_msg.message,   "    inside message");
+        assertEquals(entry_close.message, "[-] test block");
+        cleanUpStreams(out);
+    }
+    
+    @Test
+    public void test_withoutProfiling_withResult() {
+        
+        String loggerName = "test-logger-without-profiling";
+        
+        ByteArrayOutputStream out = setUpOutStream();
+        
+        try (LogBlock log = LogBlockFactory.info(loggerName, "test block")) {
+            LoggerFactory.getLogger(loggerName).debug("inside message");
+            log.reportInfo("result=%s", "result_value");
+        }
+        
+        List<String> messages = Arrays.asList(out.toString().split("\\n"));
+        assertEquals(messages.size(), 3);
+        LogEntry entry_start = LogEntry.parse(messages.get(0));
+        LogEntry entry_msg   = LogEntry.parse(messages.get(1));
+        LogEntry entry_close = LogEntry.parse(messages.get(2));
+        assertEquals(entry_start.level, "INFO");
+        assertEquals(entry_msg.level,   "DEBUG");
+        assertEquals(entry_close.level, "INFO");
+        assertEquals(entry_start.message, "[+] test block");
+        assertEquals(entry_msg.message,   "    inside message");
+        assertEquals(entry_close.message, "[-] test block: result=result_value");
+        cleanUpStreams(out);
+    }
+    
+    @Test
+    public void test_withoutProfiling_reportException_withoutResult() {
+        
+        String loggerName = "test-logger-without-profiling";
+        RuntimeException testEx = new RuntimeException("test exception");
+        
+        ByteArrayOutputStream out = setUpOutStream();
+        
+        try (LogBlock log = LogBlockFactory.info(loggerName, "test block")) {
+            LoggerFactory.getLogger(loggerName).debug("inside message");
+            log.withException(testEx).reportError();
+        }
+        
+        List<String> messages = Arrays.asList(out.toString().split("\\n"));
+        assertEquals(messages.size(), 4 + testEx.getStackTrace().length);
+        LogEntry entry_start = LogEntry.parse(messages.get(0));
+        LogEntry entry_msg   = LogEntry.parse(messages.get(1));
+        LogEntry entry_close = LogEntry.parse(messages.get(2));
+        assertEquals(entry_start.level, "INFO");
+        assertEquals(entry_msg.level,   "DEBUG");
+        assertEquals(entry_close.level, "ERROR");
+        assertEquals(entry_start.message, "[+] test block");
+        assertEquals(entry_msg.message,   "    inside message");
+        assertEquals(entry_close.message, "[-] test block: Exception: " + testEx.toString());
+        assertEquals(messages.get(3), testEx.toString());
+        IntStream.range(0, testEx.getStackTrace().length)
+                .forEach(i -> assertEquals(messages.get(4 + i).trim(), "at " + testEx.getStackTrace()[i]));
+        
+        cleanUpStreams(out);
+    }
+    
+    @Test
+    public void test_withoutProfiling_reportException_withResult() {
+        
+        String loggerName = "test-logger-without-profiling";
+        RuntimeException testEx = new RuntimeException("test exception");
+        
+        ByteArrayOutputStream out = setUpOutStream();
+        
+        try (LogBlock log = LogBlockFactory.info(loggerName, "test block")) {
+            LoggerFactory.getLogger(loggerName).debug("inside message");
+            log.withException(testEx).reportError("error_result=%s", "error_value");
+        }
+        
+        List<String> messages = Arrays.asList(out.toString().split("\\n"));
+        assertEquals(messages.size(), 4 + testEx.getStackTrace().length);
+        LogEntry entry_start = LogEntry.parse(messages.get(0));
+        LogEntry entry_msg   = LogEntry.parse(messages.get(1));
+        LogEntry entry_close = LogEntry.parse(messages.get(2));
+        assertEquals(entry_start.level, "INFO");
+        assertEquals(entry_msg.level,   "DEBUG");
+        assertEquals(entry_close.level, "ERROR");
+        assertEquals(entry_start.message, "[+] test block");
+        assertEquals(entry_msg.message,   "    inside message");
+        assertEquals(entry_close.message, "[-] test block: error_result=error_value; Exception: " + testEx.toString());
+        assertEquals(messages.get(3), testEx.toString());
+        IntStream.range(0, testEx.getStackTrace().length)
+                .forEach(i -> assertEquals(messages.get(4 + i).trim(), "at " + testEx.getStackTrace()[i]));
+        
+        cleanUpStreams(out);
+    }
+    
+    @Test
+    public void test_withoutParams_withoutParams() {
+        
+        String loggerName = "test-logger-without-params";
+        
+        ByteArrayOutputStream out = setUpOutStream();
+        
+        try (LogBlock log = LogBlockFactory.info(loggerName, "test block")) {
+            LoggerFactory.getLogger(loggerName).debug("inside message");
+        }
+        
+        List<String> messages = Arrays.asList(out.toString().split("\\n"));
+        assertEquals(messages.size(), 3);
+        LogEntry entry_start = LogEntry.parse(messages.get(0));
+        LogEntry entry_msg   = LogEntry.parse(messages.get(1));
+        LogEntry entry_close = LogEntry.parse(messages.get(2));
+        assertEquals(entry_start.level, "INFO");
+        assertEquals(entry_msg.level,   "DEBUG");
+        assertEquals(entry_close.level, "INFO");
+        assertEquals(entry_start.message, "[+] test block");
+        assertEquals(entry_msg.message,   "    inside message");
+        assertTrue(entry_close.message.matches("\\[-\\] test block \\(PT[\\d\\.]+S\\)"), String.format("Wrong format: %s", entry_close.message));
+        cleanUpStreams(out);
+    }
+    
+    @Test
+    public void test_withoutParams_withParamsIgnored() {
+        
+        String loggerName = "test-logger-without-params";
+        
+        ByteArrayOutputStream out = setUpOutStream();
+        
+        try (LogBlock log = LogBlockFactory.info(loggerName, "test block", "param=%s", "value")) {
+            LoggerFactory.getLogger(loggerName).debug("inside message");
+        }
+        
+        List<String> messages = Arrays.asList(out.toString().split("\\n"));
+        assertEquals(messages.size(), 3);
+        LogEntry entry_start = LogEntry.parse(messages.get(0));
+        LogEntry entry_msg   = LogEntry.parse(messages.get(1));
+        LogEntry entry_close = LogEntry.parse(messages.get(2));
+        assertEquals(entry_start.level, "INFO");
+        assertEquals(entry_msg.level,   "DEBUG");
+        assertEquals(entry_close.level, "INFO");
+        assertEquals(entry_start.message, "[+] test block");
+        assertEquals(entry_msg.message,   "    inside message");
+        assertTrue(entry_close.message.matches("\\[-\\] test block \\(PT[\\d\\.]+S\\)"), String.format("Wrong format: %s", entry_close.message));
+        cleanUpStreams(out);
+    }
+    
+    @Test
+    public void test_withoutResult() {
+        
+        String loggerName = "test-logger-without-result";
+        
+        ByteArrayOutputStream out = setUpOutStream();
+        
+        try (LogBlock log = LogBlockFactory.info(loggerName, "test block")) {
+            LoggerFactory.getLogger(loggerName).debug("inside message");
+        }
+        
+        List<String> messages = Arrays.asList(out.toString().split("\\n"));
+        assertEquals(messages.size(), 3);
+        LogEntry entry_start = LogEntry.parse(messages.get(0));
+        LogEntry entry_msg   = LogEntry.parse(messages.get(1));
+        LogEntry entry_close = LogEntry.parse(messages.get(2));
+        assertEquals(entry_start.level, "INFO");
+        assertEquals(entry_msg.level,   "DEBUG");
+        assertEquals(entry_close.level, "INFO");
+        assertEquals(entry_start.message, "[+] test block");
+        assertEquals(entry_msg.message,   "    inside message");
+        assertEquals(entry_close.message, "[-] test block");
+        cleanUpStreams(out);
+    }
+    
+    @Test
+    public void test_withoutResult_withParams() {
+        
+        String loggerName = "test-logger-without-result";
+        
+        ByteArrayOutputStream out = setUpOutStream();
+        
+        try (LogBlock log = LogBlockFactory.info(loggerName, "test block", "param1=%s", "value1")) {
+            LoggerFactory.getLogger(loggerName).debug("inside message");
+        }
+        
+        List<String> messages = Arrays.asList(out.toString().split("\\n"));
+        assertEquals(messages.size(), 3);
+        LogEntry entry_start = LogEntry.parse(messages.get(0));
+        LogEntry entry_msg   = LogEntry.parse(messages.get(1));
+        LogEntry entry_close = LogEntry.parse(messages.get(2));
+        assertEquals(entry_start.level, "INFO");
+        assertEquals(entry_msg.level,   "DEBUG");
+        assertEquals(entry_close.level, "INFO");
+        assertEquals(entry_start.message, "[+] test block (param1=value1)");
+        assertEquals(entry_msg.message,   "    inside message");
+        assertEquals(entry_close.message, "[-] test block");
+        cleanUpStreams(out);
+    }
+    
+    @Test
+    public void test_withoutResult_withResultIgnored() {
+        
+        String loggerName = "test-logger-without-result";
+        
+        ByteArrayOutputStream out = setUpOutStream();
+        
+        try (LogBlock log = LogBlockFactory.info(loggerName, "test block")) {
+            LoggerFactory.getLogger(loggerName).debug("inside message");
+            log.reportInfo("result=%s", "result_value");
+        }
+        
+        List<String> messages = Arrays.asList(out.toString().split("\\n"));
+        assertEquals(messages.size(), 3);
+        LogEntry entry_start = LogEntry.parse(messages.get(0));
+        LogEntry entry_msg   = LogEntry.parse(messages.get(1));
+        LogEntry entry_close = LogEntry.parse(messages.get(2));
+        assertEquals(entry_start.level, "INFO");
+        assertEquals(entry_msg.level,   "DEBUG");
+        assertEquals(entry_close.level, "INFO");
+        assertEquals(entry_start.message, "[+] test block");
+        assertEquals(entry_msg.message,   "    inside message");
+        assertEquals(entry_close.message, "[-] test block");
+        cleanUpStreams(out);
+    }
+    
+    @Test
+    public void test_withoutResult_reportException_withoutResult() {
+        
+        String loggerName = "test-logger-without-result";
+        RuntimeException testEx = new RuntimeException("test exception");
+        
+        ByteArrayOutputStream out = setUpOutStream();
+        
+        try (LogBlock log = LogBlockFactory.info(loggerName, "test block")) {
+            LoggerFactory.getLogger(loggerName).debug("inside message");
+            log.withException(testEx).reportError();
+        }
+        
+        List<String> messages = Arrays.asList(out.toString().split("\\n"));
+        assertEquals(messages.size(), 4 + testEx.getStackTrace().length);
+        LogEntry entry_start = LogEntry.parse(messages.get(0));
+        LogEntry entry_msg   = LogEntry.parse(messages.get(1));
+        LogEntry entry_close = LogEntry.parse(messages.get(2));
+        assertEquals(entry_start.level, "INFO");
+        assertEquals(entry_msg.level,   "DEBUG");
+        assertEquals(entry_close.level, "ERROR");
+        assertEquals(entry_start.message, "[+] test block");
+        assertEquals(entry_msg.message,   "    inside message");
+        assertEquals(entry_close.message, "[-] test block: Exception: " + testEx.toString());
+        assertEquals(messages.get(3), testEx.toString());
+        IntStream.range(0, testEx.getStackTrace().length)
+                .forEach(i -> assertEquals(messages.get(4 + i).trim(), "at " + testEx.getStackTrace()[i]));
+        
+        cleanUpStreams(out);
+    }
+    
+    @Test
+    public void test_withoutResult_reportException_withResultIgnored() {
+        
+        String loggerName = "test-logger-without-result";
+        RuntimeException testEx = new RuntimeException("test exception");
+        
+        ByteArrayOutputStream out = setUpOutStream();
+        
+        try (LogBlock log = LogBlockFactory.info(loggerName, "test block")) {
+            LoggerFactory.getLogger(loggerName).debug("inside message");
+            log.withException(testEx).reportError("error_result=%s", "error_value");
+        }
+        
+        List<String> messages = Arrays.asList(out.toString().split("\\n"));
+        assertEquals(messages.size(), 4 + testEx.getStackTrace().length);
+        LogEntry entry_start = LogEntry.parse(messages.get(0));
+        LogEntry entry_msg   = LogEntry.parse(messages.get(1));
+        LogEntry entry_close = LogEntry.parse(messages.get(2));
+        assertEquals(entry_start.level, "INFO");
+        assertEquals(entry_msg.level,   "DEBUG");
+        assertEquals(entry_close.level, "ERROR");
+        assertEquals(entry_start.message, "[+] test block");
+        assertEquals(entry_msg.message,   "    inside message");
+        assertEquals(entry_close.message, "[-] test block: Exception: " + testEx.toString());
+        assertEquals(messages.get(3), testEx.toString());
+        IntStream.range(0, testEx.getStackTrace().length)
+                .forEach(i -> assertEquals(messages.get(4 + i).trim(), "at " + testEx.getStackTrace()[i]));
+        
+        cleanUpStreams(out);
+    }
+    
+    @Test
+    public void test_withoutExceptionInfo() {
+        
+        String loggerName = "test-logger-without-exception-info";
+        
+        ByteArrayOutputStream out = setUpOutStream();
+        
+        try (LogBlock log = LogBlockFactory.info(loggerName, "test block")) {
+            LoggerFactory.getLogger(loggerName).debug("inside message");
+        }
+        
+        List<String> messages = Arrays.asList(out.toString().split("\\n"));
+        assertEquals(messages.size(), 3);
+        LogEntry entry_start = LogEntry.parse(messages.get(0));
+        LogEntry entry_msg   = LogEntry.parse(messages.get(1));
+        LogEntry entry_close = LogEntry.parse(messages.get(2));
+        assertEquals(entry_start.level, "INFO");
+        assertEquals(entry_msg.level,   "DEBUG");
+        assertEquals(entry_close.level, "INFO");
+        assertEquals(entry_start.message, "[+] test block");
+        assertEquals(entry_msg.message,   "    inside message");
+        assertEquals(entry_close.message, "[-] test block");
+        cleanUpStreams(out);
+    }
+    
+    @Test
+    public void test_withoutExceptionInfo_withParams() {
+        
+        String loggerName = "test-logger-without-exception-info";
+        
+        ByteArrayOutputStream out = setUpOutStream();
+        
+        try (LogBlock log = LogBlockFactory.info(loggerName, "test block", "param1=%s", "value1")) {
+            LoggerFactory.getLogger(loggerName).debug("inside message");
+        }
+        
+        List<String> messages = Arrays.asList(out.toString().split("\\n"));
+        assertEquals(messages.size(), 3);
+        LogEntry entry_start = LogEntry.parse(messages.get(0));
+        LogEntry entry_msg   = LogEntry.parse(messages.get(1));
+        LogEntry entry_close = LogEntry.parse(messages.get(2));
+        assertEquals(entry_start.level, "INFO");
+        assertEquals(entry_msg.level,   "DEBUG");
+        assertEquals(entry_close.level, "INFO");
+        assertEquals(entry_start.message, "[+] test block (param1=value1)");
+        assertEquals(entry_msg.message,   "    inside message");
+        assertEquals(entry_close.message, "[-] test block");
+        cleanUpStreams(out);
+    }
+    
+    @Test
+    public void test_withoutExceptionInfo_withResult() {
+        
+        String loggerName = "test-logger-without-exception-info";
+        
+        ByteArrayOutputStream out = setUpOutStream();
+        
+        try (LogBlock log = LogBlockFactory.info(loggerName, "test block")) {
+            LoggerFactory.getLogger(loggerName).debug("inside message");
+            log.reportInfo("result=%s", "result_value");
+        }
+        
+        List<String> messages = Arrays.asList(out.toString().split("\\n"));
+        assertEquals(messages.size(), 3);
+        LogEntry entry_start = LogEntry.parse(messages.get(0));
+        LogEntry entry_msg   = LogEntry.parse(messages.get(1));
+        LogEntry entry_close = LogEntry.parse(messages.get(2));
+        assertEquals(entry_start.level, "INFO");
+        assertEquals(entry_msg.level,   "DEBUG");
+        assertEquals(entry_close.level, "INFO");
+        assertEquals(entry_start.message, "[+] test block");
+        assertEquals(entry_msg.message,   "    inside message");
+        assertEquals(entry_close.message, "[-] test block: result=result_value");
+        cleanUpStreams(out);
+    }
+    
+    @Test
+    public void test_withoutExceptionInfo_reportException_withoutResult() {
+        
+        String loggerName = "test-logger-without-exception-info";
+        RuntimeException testEx = new RuntimeException("test exception");
+        
+        ByteArrayOutputStream out = setUpOutStream();
+        
+        try (LogBlock log = LogBlockFactory.info(loggerName, "test block")) {
+            LoggerFactory.getLogger(loggerName).debug("inside message");
+            log.withException(testEx).reportError();
+        }
+        
+        List<String> messages = Arrays.asList(out.toString().split("\\n"));
+        assertEquals(messages.size(), 4 + testEx.getStackTrace().length);
+        LogEntry entry_start = LogEntry.parse(messages.get(0));
+        LogEntry entry_msg   = LogEntry.parse(messages.get(1));
+        LogEntry entry_close = LogEntry.parse(messages.get(2));
+        assertEquals(entry_start.level, "INFO");
+        assertEquals(entry_msg.level,   "DEBUG");
+        assertEquals(entry_close.level, "ERROR");
+        assertEquals(entry_start.message, "[+] test block");
+        assertEquals(entry_msg.message,   "    inside message");
+        assertEquals(entry_close.message, "[-] test block");
+        assertEquals(messages.get(3), testEx.toString());
+        IntStream.range(0, testEx.getStackTrace().length)
+                .forEach(i -> assertEquals(messages.get(4 + i).trim(), "at " + testEx.getStackTrace()[i]));
+        
+        cleanUpStreams(out);
+    }
+    
+    @Test
+    public void test_withoutExceptionInfo_reportException_withResult() {
+        
+        String loggerName = "test-logger-without-exception-info";
+        RuntimeException testEx = new RuntimeException("test exception");
+        
+        ByteArrayOutputStream out = setUpOutStream();
+        
+        try (LogBlock log = LogBlockFactory.info(loggerName, "test block")) {
+            LoggerFactory.getLogger(loggerName).debug("inside message");
+            log.withException(testEx).reportError("error_result=%s", "error_value");
+        }
+        
+        List<String> messages = Arrays.asList(out.toString().split("\\n"));
+        assertEquals(messages.size(), 4 + testEx.getStackTrace().length);
+        LogEntry entry_start = LogEntry.parse(messages.get(0));
+        LogEntry entry_msg   = LogEntry.parse(messages.get(1));
+        LogEntry entry_close = LogEntry.parse(messages.get(2));
+        assertEquals(entry_start.level, "INFO");
+        assertEquals(entry_msg.level,   "DEBUG");
+        assertEquals(entry_close.level, "ERROR");
+        assertEquals(entry_start.message, "[+] test block");
+        assertEquals(entry_msg.message,   "    inside message");
+        assertEquals(entry_close.message, "[-] test block: error_result=error_value");
+        assertEquals(messages.get(3), testEx.toString());
+        IntStream.range(0, testEx.getStackTrace().length)
+                .forEach(i -> assertEquals(messages.get(4 + i).trim(), "at " + testEx.getStackTrace()[i]));
+        
+        cleanUpStreams(out);
+    }
+    
+    @Test
+    public void test_withoutStackTrace() {
+        
+        String loggerName = "test-logger-without-stack-trace";
+        
+        ByteArrayOutputStream out = setUpOutStream();
+        
+        try (LogBlock log = LogBlockFactory.info(loggerName, "test block")) {
+            LoggerFactory.getLogger(loggerName).debug("inside message");
+        }
+        
+        List<String> messages = Arrays.asList(out.toString().split("\\n"));
+        assertEquals(messages.size(), 3);
+        LogEntry entry_start = LogEntry.parse(messages.get(0));
+        LogEntry entry_msg   = LogEntry.parse(messages.get(1));
+        LogEntry entry_close = LogEntry.parse(messages.get(2));
+        assertEquals(entry_start.level, "INFO");
+        assertEquals(entry_msg.level,   "DEBUG");
+        assertEquals(entry_close.level, "INFO");
+        assertEquals(entry_start.message, "[+] test block");
+        assertEquals(entry_msg.message,   "    inside message");
+        assertEquals(entry_close.message, "[-] test block");
+        cleanUpStreams(out);
+    }
+    
+    @Test
+    public void test_withoutStackTrace_withParams() {
+        
+        String loggerName = "test-logger-without-stack-trace";
+        
+        ByteArrayOutputStream out = setUpOutStream();
+        
+        try (LogBlock log = LogBlockFactory.info(loggerName, "test block", "param1=%s", "value1")) {
+            LoggerFactory.getLogger(loggerName).debug("inside message");
+        }
+        
+        List<String> messages = Arrays.asList(out.toString().split("\\n"));
+        assertEquals(messages.size(), 3);
+        LogEntry entry_start = LogEntry.parse(messages.get(0));
+        LogEntry entry_msg   = LogEntry.parse(messages.get(1));
+        LogEntry entry_close = LogEntry.parse(messages.get(2));
+        assertEquals(entry_start.level, "INFO");
+        assertEquals(entry_msg.level,   "DEBUG");
+        assertEquals(entry_close.level, "INFO");
+        assertEquals(entry_start.message, "[+] test block (param1=value1)");
+        assertEquals(entry_msg.message,   "    inside message");
+        assertEquals(entry_close.message, "[-] test block");
+        cleanUpStreams(out);
+    }
+    
+    @Test
+    public void test_withoutStackTrace_withResult() {
+        
+        String loggerName = "test-logger-without-stack-trace";
+        
+        ByteArrayOutputStream out = setUpOutStream();
+        
+        try (LogBlock log = LogBlockFactory.info(loggerName, "test block")) {
+            LoggerFactory.getLogger(loggerName).debug("inside message");
+            log.reportInfo("result=%s", "result_value");
+        }
+        
+        List<String> messages = Arrays.asList(out.toString().split("\\n"));
+        assertEquals(messages.size(), 3);
+        LogEntry entry_start = LogEntry.parse(messages.get(0));
+        LogEntry entry_msg   = LogEntry.parse(messages.get(1));
+        LogEntry entry_close = LogEntry.parse(messages.get(2));
+        assertEquals(entry_start.level, "INFO");
+        assertEquals(entry_msg.level,   "DEBUG");
+        assertEquals(entry_close.level, "INFO");
+        assertEquals(entry_start.message, "[+] test block");
+        assertEquals(entry_msg.message,   "    inside message");
+        assertEquals(entry_close.message, "[-] test block: result=result_value");
+        cleanUpStreams(out);
+    }
+    
+    @Test
+    public void test_withoutStackTrace_reportException_withoutResult() {
+        
+        String loggerName = "test-logger-without-stack-trace";
+        RuntimeException testEx = new RuntimeException("test exception");
+        
+        ByteArrayOutputStream out = setUpOutStream();
+        
+        try (LogBlock log = LogBlockFactory.info(loggerName, "test block")) {
+            LoggerFactory.getLogger(loggerName).debug("inside message");
+            log.withException(testEx).reportError();
+        }
+        
+        List<String> messages = Arrays.asList(out.toString().split("\\n"));
+        assertEquals(messages.size(), 3);
+        LogEntry entry_start = LogEntry.parse(messages.get(0));
+        LogEntry entry_msg   = LogEntry.parse(messages.get(1));
+        LogEntry entry_close = LogEntry.parse(messages.get(2));
+        assertEquals(entry_start.level, "INFO");
+        assertEquals(entry_msg.level,   "DEBUG");
+        assertEquals(entry_close.level, "ERROR");
+        assertEquals(entry_start.message, "[+] test block");
+        assertEquals(entry_msg.message,   "    inside message");
+        assertEquals(entry_close.message, "[-] test block: Exception: " + testEx.toString());
+        
+        cleanUpStreams(out);
+    }
+    
+    @Test
+    public void test_withoutStackTrace_reportException_withResult() {
+        
+        String loggerName = "test-logger-without-stack-trace";
+        RuntimeException testEx = new RuntimeException("test exception");
+        
+        ByteArrayOutputStream out = setUpOutStream();
+        
+        try (LogBlock log = LogBlockFactory.info(loggerName, "test block")) {
+            LoggerFactory.getLogger(loggerName).debug("inside message");
+            log.withException(testEx).reportError("error_result=%s", "error_value");
+        }
+        
+        List<String> messages = Arrays.asList(out.toString().split("\\n"));
+        assertEquals(messages.size(), 3);
+        LogEntry entry_start = LogEntry.parse(messages.get(0));
+        LogEntry entry_msg   = LogEntry.parse(messages.get(1));
+        LogEntry entry_close = LogEntry.parse(messages.get(2));
+        assertEquals(entry_start.level, "INFO");
+        assertEquals(entry_msg.level,   "DEBUG");
+        assertEquals(entry_close.level, "ERROR");
+        assertEquals(entry_start.message, "[+] test block");
+        assertEquals(entry_msg.message,   "    inside message");
+        assertEquals(entry_close.message, "[-] test block: error_result=error_value; Exception: " + testEx.toString());
+        
+        cleanUpStreams(out);
+    }
+
     private static class LogEntry {
         
         private static final Pattern PATTERN = Pattern.compile(

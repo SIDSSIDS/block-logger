@@ -13,6 +13,37 @@
         </encoder>
     </appender>
     
+    <appender name="CONSOLE_WITHOUT_PARAMS" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="com.github.sidssids.blocklogger.encoder.BlockloggerPatternLayoutEncoder">
+            <pattern>%d [%-10thread] %-5level %msg%n</pattern>
+            <appendParams>false</appendParams>
+        </encoder>
+    </appender>
+    
+    <appender name="CONSOLE_WITHOUT_RESULT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="com.github.sidssids.blocklogger.encoder.BlockloggerPatternLayoutEncoder">
+            <pattern>%d [%-10thread] %-5level %msg%n</pattern>
+            <profiling>false</profiling>
+            <appendResult>false</appendResult>
+        </encoder>
+    </appender>
+    
+    <appender name="CONSOLE_WITHOUT_EXCEPTION_INFO" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="com.github.sidssids.blocklogger.encoder.BlockloggerPatternLayoutEncoder">
+            <pattern>%d [%-10thread] %-5level %msg%n</pattern>
+            <profiling>false</profiling>
+            <appendExceptionInfo>false</appendExceptionInfo>
+        </encoder>
+    </appender>
+    
+    <appender name="CONSOLE_WITHOUT_STACK_TRACE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="com.github.sidssids.blocklogger.encoder.BlockloggerPatternLayoutEncoder">
+            <pattern>%d [%-10thread] %-5level %msg%n</pattern>
+            <profiling>false</profiling>
+            <appendStackTrace>false</appendStackTrace>
+        </encoder>
+    </appender>
+    
     <appender name="CONSOLE_WITH_DEFAULT_ENCODER" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>%d [%-10thread] %-5level msg:%msg%n</pattern>
@@ -30,6 +61,26 @@
     <!-- test logger without profiling -->
     <logger name="test-logger-without-profiling" level="TRACE">
         <appender-ref ref="CONSOLE_WITHOUT_PROFILING"/>
+    </logger>
+    
+    <!-- test logger without params -->
+    <logger name="test-logger-without-params" level="TRACE">
+        <appender-ref ref="CONSOLE_WITHOUT_PARAMS"/>
+    </logger>
+    
+    <!-- test logger without result -->
+    <logger name="test-logger-without-result" level="TRACE">
+        <appender-ref ref="CONSOLE_WITHOUT_RESULT"/>
+    </logger>
+    
+    <!-- test logger without exception info -->
+    <logger name="test-logger-without-exception-info" level="TRACE">
+        <appender-ref ref="CONSOLE_WITHOUT_EXCEPTION_INFO"/>
+    </logger>
+    
+    <!-- test logger without stack trace -->
+    <logger name="test-logger-without-stack-trace" level="TRACE">
+        <appender-ref ref="CONSOLE_WITHOUT_STACK_TRACE"/>
     </logger>
     
     <!-- test logger by package -->
