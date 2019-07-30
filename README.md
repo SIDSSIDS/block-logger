@@ -13,7 +13,27 @@ Block-logger is an extention for [logback](https://logback.qos.ch) logging frame
 2018-04-25 11:24:01,384 [main      ] INFO      [-] Store data (PT-0.101S): saved
 2018-04-25 11:24:01,384 [main      ] INFO  [-] Change name (PT-0.217S)
 ```
-Refer [wiki](https://github.com/SIDSSIDS/block-logger/wiki) for more Details
+## Usage example
+Example of using `LogBlock` in couple with standard `org.slf4j.Logger`:
+```java
+public static void main(String[] args) {
+    Logger logger = LoggerFactory.getLogger(Main.class);               // slf4 logger
+
+    logger.info("outside block");
+
+    try (LogBlock log = LogBlockFactory.info(Main.class, "block", "param=%s", "value")) { // start block
+        logger.info("inside block");                                   // use slf4 logger inside the block
+    }                                                                  // LogBlock is autoclosable
+}
+```
+The output:
+```
+2018-04-25 13:04:54,631 [main      ] INFO  outside block
+2018-04-25 13:04:54,682 [main      ] INFO  [+] block (param=value)
+2018-04-25 13:04:54,682 [main      ] INFO      inside block
+2018-04-25 13:04:54,686 [main      ] INFO  [-] block (PT0.004S)
+```
+Refer [wiki](https://github.com/SIDSSIDS/block-logger/wiki) for details and configuration
 
 | Stable Release Version | JDK Version compatibility | Release Date |
 | ------------- | ------------- | ------------|
