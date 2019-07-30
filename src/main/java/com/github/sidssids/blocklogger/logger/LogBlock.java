@@ -130,7 +130,7 @@ public class LogBlock implements Logger, Closeable {
                     .withDuration(Duration.between(start, Instant.now()))
                     .withResult(result)
                     .withException(exception);
-            String message = MarkerFormatter.generateCloseBlockMessage(true, marker);
+            String message = MarkerFormatter.generateCloseBlockMessage(marker);
             log(disposeLevel, marker, message);
         }
     }

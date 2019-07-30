@@ -1,56 +1,70 @@
 package com.github.sidssids.blocklogger.formatter;
 
+import com.github.sidssids.blocklogger.config.Settings;
 import com.github.sidssids.blocklogger.logger.markers.CloseMarker;
 import com.github.sidssids.blocklogger.logger.markers.StartMarker;
-import java.time.Duration;
-import java.util.Optional;
 
 public class MarkerFormatter {
     
     public static String generateOpenBlockMessage(StartMarker marker) {
-        return generateOpenBlockMessage(marker.getTitle(), marker.getParams());
+        return generateOpenBlockMessage(null, marker);
     }
     
-    public static String generateOpenBlockMessage(String title, Optional<String> params) {
+    public static String generateOpenBlockMessage(Settings settings, StartMarker marker) {
+        
+        settings = getOrDefault(settings);
+        
         StringBuilder message = new StringBuilder();
         
         message.append("[+] ");
-        message.append(title);
-        if (params.isPresent()) {
-            message.append(" (").append(params.get()).append(")");
+        message.append(marker.getTitle());
+        if (settings.isAppendParams() && marker.getParams().isPresent()) {
+            message.append(" (").append(marker.getParams().get()).append(")");
         }
         
         return message.toString();
     }
     
-    public static String generateCloseBlockMessage(boolean profiling, CloseMarker marker) {
-        return generateCloseBlockMessage(marker.getTitle(), marker.getDuration(), profiling, marker.getResult(), marker.getException());
+    public static String generateCloseBlockMessage(CloseMarker marker) {
+        return generateCloseBlockMessage(null, marker);
     }
     
-    public static String generateCloseBlockMessage(String title, Duration duration, boolean profiling, Optional<String> result, Optional<Throwable> exception) {
+    public static String generateCloseBlockMessage(Settings settings, CloseMarker marker) {
+        
+        settings = getOrDefault(settings);
+        
         StringBuilder message = new StringBuilder();
         
-        message.append("[-] ").append(title);
-        if (profiling) {
-            message.append(" (").append(duration.toString()).append(")");
+        // profiling
+        message.append("[-] ").append(marker.getTitle());
+        if (settings.isProfiling()) {
+            message.append(" (").append(marker.getDuration().toString()).append(")");
         }
-        return generateCloseBlockResult(message, result, exception)
-                .toString();
-    }
-    
-    private static StringBuilder generateCloseBlockResult(StringBuilder message, Optional<String> result, Optional<Throwable> exception) {
-        if (result.isPresent() || exception.isPresent()) {
+        
+        boolean appendResult = settings.isAppendResult()        && marker.getResult().isPresent();
+        boolean appendExInfo = settings.isAppendExceptionInfo() && marker.getException().isPresent();
+        
+        if (appendResult || appendExInfo) {
             message.append(": ");
         }
-        if (result.isPresent()) {
-            message.append(result.get());
+        
+        // result
+        if (appendResult) {
+            message.append(marker.getResult().get());
         }
-        if (exception.isPresent()) {
-            if (message.length() > 0) {
+        
+        // exception
+        if (appendExInfo) {
+            if (appendResult) {
                 message.append("; ");
             }
-            message.append("Exception: ").append(exception.get().toString());
+            message.append("Exception: ").append(marker.getException().get().toString());
         }
-        return message;
-    }    
+        return message.toString();
+    }
+    
+    private static Settings getOrDefault(Settings settings) {
+        return settings != null ? settings : Settings.Defaults.SETTINGS;
+    }
+    
 }

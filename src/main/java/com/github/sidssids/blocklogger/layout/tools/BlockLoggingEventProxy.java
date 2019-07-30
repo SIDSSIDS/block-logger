@@ -11,12 +11,14 @@ public class BlockLoggingEventProxy implements ILoggingEvent {
     
     private final ILoggingEvent event;
     private final String        message;
+    private final boolean       suppressException;
 
-    public BlockLoggingEventProxy(ILoggingEvent event, String message) {
+    public BlockLoggingEventProxy(ILoggingEvent event, String message, boolean suppressException) {
         this.event   = event;
         this.message = message;
+        this.suppressException = suppressException;
     }
-
+    
     @Override
     public String getThreadName() {
         return event.getThreadName();
@@ -54,12 +56,12 @@ public class BlockLoggingEventProxy implements ILoggingEvent {
 
     @Override
     public IThrowableProxy getThrowableProxy() {
-        return event.getThrowableProxy();
+        return suppressException ? null : event.getThrowableProxy();
     }
 
     @Override
     public StackTraceElement[] getCallerData() {
-        return event.getCallerData();
+        return suppressException ? null : event.getCallerData();
     }
 
     @Override
