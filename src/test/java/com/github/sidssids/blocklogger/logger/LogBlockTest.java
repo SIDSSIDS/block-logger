@@ -1,17 +1,20 @@
 package com.github.sidssids.blocklogger.logger;
 
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.joran.JoranConfigurator;
+import ch.qos.logback.core.joran.spi.JoranException;
+import ch.qos.logback.core.util.StatusPrinter;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.IntStream;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
 
 import static org.testng.Assert.*;
+import org.testng.annotations.BeforeClass;
 
 public class LogBlockTest {
     
@@ -30,6 +33,23 @@ public class LogBlockTest {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+    
+    @BeforeClass
+    public void init() {
+        LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
+        try {
+            JoranConfigurator configurator = new JoranConfigurator();
+            configurator.setContext(context);
+            // Call context.reset() to clear any previous configuration, e.g. default
+            // configuration. For multi-step configuration, omit calling context.reset().
+            context.reset();
+            configurator.doConfigure(this.getClass().getResourceAsStream("/logback.xml"));
+        } catch (JoranException je) {
+            // StatusPrinter will handle this
+            je.printStackTrace(defaultOut);
+        }
+        StatusPrinter.printInCaseOfErrorsOrWarnings(context);
     }
     
     @Test
@@ -995,68 +1015,11 @@ public class LogBlockTest {
         cleanUpStreams(out);
     }
 
-    private static class LogEntry {
-        
-        private static final Pattern PATTERN = Pattern.compile(
-                "(?<timestamp>\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2},\\d{3}) " +
-                "\\[(?<threadName>[^\\]]+)\\] " +
-                "(?<level>.{5}) " + 
-                "(?<message>.*)");
-        
-        String source;
-        String timestamp;
-        String level;
-        String threadName;
-        String message;
-
-        public LogEntry withSource(final String source) {
-            this.source = source;
-            return this;
-        }
-
-        public LogEntry withTimestamp(final String timestamp) {
-            this.timestamp = timestamp;
-            return this;
-        }
-
-        public LogEntry withLevel(final String level) {
-            this.level = level;
-            return this;
-        }
-
-        public LogEntry withThreadName(final String threadName) {
-            this.threadName = threadName;
-            return this;
-        }
-
-        public LogEntry withMessage(final String message) {
-            this.message = message;
-            return this;
-        }
-        
-        static LogEntry parse(String message) {
-            Matcher m = PATTERN.matcher(message);
-            if (m.find()) {
-                return new LogEntry()
-                            .withSource(message)
-                            .withTimestamp(m.group("timestamp").trim())
-                            .withThreadName(m.group("threadName").trim())
-                            .withLevel(m.group("level").trim())
-                            .withMessage(m.group("message"));
-            } else {
-                fail(String.format("'%s' doesn't match pattern: %s", message, PATTERN.pattern()));
-                return null;
-            }
-        }
+    
+    @Test
+    public void test_indention_property_null() {
+        LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
+        String indention = context.getProperty("com.github.sidssids.blocklogger.indention");
+        assertNull(indention);
     }
-    
-    
-//        Logger logger = (Logger)LoggerFactory.getLogger(LogBlockTest.class);
-//        ListAppender<ILoggingEvent> listAppender = new ListAppender<>();
-//        listAppender.start();
-//        logger.addAppender(listAppender);
-        
-//        List<ILoggingEvent> logList = listAppender.list;
-//        Assert.assertEquals(logList.size(), 1);
-        
 }
