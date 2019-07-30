@@ -41,7 +41,7 @@ public class LogBlockTest {
         assertEquals(messages.size(), 1);
         LogEntry entry = LogEntry.parse(messages.get(0));
         assertEquals(entry.level, "INFO");
-        assertEquals(entry.message, "[+] test block (param1=value1): Started...");
+        assertEquals(entry.message, "[+] test block (param1=value1)");
         
         cleanUpStreams(out);
         log.close();
@@ -57,7 +57,7 @@ public class LogBlockTest {
         assertEquals(messages.size(), 1);
         LogEntry entry = LogEntry.parse(messages.get(0));
         assertEquals(entry.level, "INFO");
-        assertEquals(entry.message, "[+] test block: Started...");
+        assertEquals(entry.message, "[+] test block");
         
         cleanUpStreams(out);
         log.close();
@@ -73,7 +73,7 @@ public class LogBlockTest {
         assertEquals(messages.size(), 1);
         LogEntry entry = LogEntry.parse(messages.get(0));
         assertEquals(entry.level, "DEBUG");
-        assertEquals(entry.message, "[+] test block: Started...");
+        assertEquals(entry.message, "[+] test block");
         
         cleanUpStreams(out);
         log.close();
@@ -110,7 +110,7 @@ public class LogBlockTest {
         LogEntry entry = LogEntry.parse(messages.get(0));
         assertEquals(entry.level, "INFO");
         assertNotNull(entry.message);
-        assertTrue(entry.message.matches("\\[-\\] test block \\(PT[\\d\\.]+S\\): Result - report_param=report_value"));
+        assertTrue(entry.message.matches("\\[-\\] test block \\(PT[\\d\\.]+S\\): report_param=report_value"));
         
         cleanUpStreams(out);
     }
@@ -132,11 +132,11 @@ public class LogBlockTest {
         
         assertEquals(entry1.level, "INFO");
         assertNotNull(entry1.message);
-        assertEquals(entry1.message, "[+] test block: Started...");
+        assertEquals(entry1.message, "[+] test block");
         
         assertEquals(entry2.level, "DEBUG");
         assertNotNull(entry2.message);
-        assertTrue(entry2.message.matches("\\[-\\] test block \\(PT[\\d\\.]+S\\): Result - report_param=report_value"));
+        assertTrue(entry2.message.matches("\\[-\\] test block \\(PT[\\d\\.]+S\\): report_param=report_value"));
         
         cleanUpStreams(out);
     }
@@ -154,7 +154,7 @@ public class LogBlockTest {
         LogEntry entry2 = LogEntry.parse(messages.get(1));
         
         assertEquals(entry1.level, "INFO");
-        assertEquals(entry1.message, "[+] test block: Started...");
+        assertEquals(entry1.message, "[+] test block");
         
         assertEquals(entry2.level, "INFO");
         assertTrue(entry2.message.matches("\\[-\\] test block \\(PT[\\d\\.]+S\\)"));
@@ -177,7 +177,7 @@ public class LogBlockTest {
         LogEntry entry3 = LogEntry.parse(messages.get(2));
         
         assertEquals(entry1.level, "INFO");
-        assertEquals(entry1.message, "[+] test block: Started...");
+        assertEquals(entry1.message, "[+] test block");
         
         assertEquals(entry2.level, "DEBUG");
         assertEquals(entry2.message, "    message inside");
@@ -203,7 +203,7 @@ public class LogBlockTest {
         LogEntry entry3 = LogEntry.parse(messages.get(2));
         
         assertEquals(entry1.level, "INFO");
-        assertEquals(entry1.message, "[+] test block: Started...");
+        assertEquals(entry1.message, "[+] test block");
         
         assertEquals(entry2.level, "DEBUG");
         assertEquals(entry2.message, "    message inside param=value");
@@ -229,7 +229,7 @@ public class LogBlockTest {
         LogEntry entry3 = LogEntry.parse(messages.get(2));
         
         assertEquals(entry1.level, "INFO");
-        assertEquals(entry1.message, "[+] test block: Started...");
+        assertEquals(entry1.message, "[+] test block");
         
         assertEquals(entry2.level, "DEBUG");
         assertEquals(entry2.message, "    message inside with param value");
@@ -257,7 +257,7 @@ public class LogBlockTest {
         LogEntry entry4 = LogEntry.parse(messages.get(3));
         
         assertEquals(entry1.level, "INFO");
-        assertEquals(entry1.message, "[+] test block: Started...");
+        assertEquals(entry1.message, "[+] test block");
         
         assertEquals(entry2.level, "DEBUG");
         assertEquals(entry2.message, "    message inside with param value");
@@ -286,7 +286,7 @@ public class LogBlockTest {
         LogEntry entry3 = LogEntry.parse(messages.get(2));
         
         assertEquals(entry1.level, "INFO");
-        assertEquals(entry1.message, "[+] test block: Started...");
+        assertEquals(entry1.message, "[+] test block");
         
         assertEquals(entry2.level, "DEBUG");
         assertEquals(entry2.message, "    message inside with param value");
@@ -327,7 +327,7 @@ public class LogBlockTest {
         LogEntry entry3 = LogEntry.parse(messages.get(2));
         
         assertEquals(entry1.level, "INFO");
-        assertEquals(entry1.message, "msg:[+] test block: Started...");
+        assertEquals(entry1.message, "msg:[+] test block");
         
         assertEquals(entry2.level, "DEBUG");
         assertEquals(entry2.message, "msg:message inside with param value");

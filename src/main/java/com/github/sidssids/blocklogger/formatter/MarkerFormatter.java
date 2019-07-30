@@ -19,7 +19,6 @@ public class MarkerFormatter {
         if (params.isPresent()) {
             message.append(" (").append(params.get()).append(")");
         }
-        message.append(": Started...");
         
         return message.toString();
     }
@@ -44,7 +43,7 @@ public class MarkerFormatter {
             message.append(": ");
         }
         if (result.isPresent()) {
-            message.append("Result - ").append(result.get());
+            message.append(result.get());
         }
         if (exception.isPresent()) {
             if (message.length() > 0) {
