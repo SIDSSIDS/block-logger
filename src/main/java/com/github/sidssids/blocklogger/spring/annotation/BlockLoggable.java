@@ -36,4 +36,6 @@ public @interface BlockLoggable {
     
     public Level level() default Level.INFO;
     
+    public int maxElements() default Integer.MAX_VALUE;
+    
 }

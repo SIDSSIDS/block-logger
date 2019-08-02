@@ -4,6 +4,7 @@ import com.github.sidssids.blocklogger.logger.LogBlock;
 import com.github.sidssids.blocklogger.logger.LogBlockFactory;
 import com.github.sidssids.blocklogger.spring.annotation.BlockLoggable;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -39,7 +40,7 @@ public class LogBlockInterceptor {
                 if (blockLoggable.appendResult()) {
                     Class returnClass = MethodSignature.class.cast(joinPoint.getSignature()).getReturnType();
                     if (!Void.TYPE.equals(returnClass) && !Void.class.equals(returnClass)) {
-                        log.reportSuccess("%s", formatValue(result));
+                        log.reportSuccess("%s", formatValue(result, blockLoggable.maxElements()));
                     }
                 }
                 return result;
@@ -71,7 +72,7 @@ public class LogBlockInterceptor {
         } else {
             return IntStream
                     .range(0, argNames.length)
-                    .mapToObj(i -> createArg(i, argNames, args))
+                    .mapToObj(i -> createArg(i, argNames, args, blockLoggable.maxElements()))
                     .filter(Objects::nonNull)
                     .collect(Collectors.joining(", "));
         }
@@ -85,41 +86,52 @@ public class LogBlockInterceptor {
         }
     }
     
-    private String createArg(int index, String[] argNames, Object[] args) {
+    private String createArg(int index, String[] argNames, Object[] args, int maxElements) {
         String name = argNames[index];
         if (name == null || "".equals(name) || args.length <= index) {
             return null;
         }
         Object value    = args[index];
-        String valueStr = formatValue(value);
+        String valueStr = formatValue(value, maxElements);
         return String.format("%s=%s", name, valueStr);
     }
     
-    private String formatValue(Object value) {
-        if (value != null
-                && value.getClass().isArray()) {
-            if (Byte.TYPE.equals(value.getClass().getComponentType())) {
-                return String.valueOf(byte[].class.cast(value).length);
-            } else if (Boolean.TYPE.equals(value.getClass().getComponentType())) {
-                return Arrays.toString(boolean[].class.cast(value));
-            } else if (Character.TYPE.equals(value.getClass().getComponentType())) {
-                return Arrays.toString(char[].class.cast(value));
-            } else if (Short.TYPE.equals(value.getClass().getComponentType())) {
-                return Arrays.toString(short[].class.cast(value));
-            } else if (Integer.TYPE.equals(value.getClass().getComponentType())) {
-                return Arrays.toString(int[].class.cast(value));
-            } else if (Long.TYPE.equals(value.getClass().getComponentType())) {
-                return Arrays.toString(long[].class.cast(value));
-            } else if (Float.TYPE.equals(value.getClass().getComponentType())) {
-                return Arrays.toString(float[].class.cast(value));
-            } else if (Double.TYPE.equals(value.getClass().getComponentType())) {
-                return Arrays.toString(double[].class.cast(value));
-            } else {
-                return Arrays.toString(Object[].class.cast(value));
+    private String formatValue(Object value, int maxElements) {
+        if (value != null) {
+            if (value.getClass().isArray()) {
+                if (Byte.TYPE.equals(value.getClass().getComponentType())) {
+                    return String.format("[%s bytes]", byte[].class.cast(value).length);
+                } else if (Boolean.TYPE.equals(value.getClass().getComponentType())) {
+                    boolean[] a = boolean[].class.cast(value);
+                    return a.length > maxElements ? String.format("[%s elements]", a.length) : Arrays.toString(a);
+                } else if (Character.TYPE.equals(value.getClass().getComponentType())) {
+                    char[] a = char[].class.cast(value);
+                    return a.length > maxElements ? String.format("[%s elements]", a.length) : Arrays.toString(a);
+                } else if (Short.TYPE.equals(value.getClass().getComponentType())) {
+                    short[] a = short[].class.cast(value);
+                    return a.length > maxElements ? String.format("[%s elements]", a.length) : Arrays.toString(a);
+                } else if (Integer.TYPE.equals(value.getClass().getComponentType())) {
+                    int[] a = int[].class.cast(value);
+                    return a.length > maxElements ? String.format("[%s elements]", a.length) : Arrays.toString(a);
+                } else if (Long.TYPE.equals(value.getClass().getComponentType())) {
+                    long[] a = long[].class.cast(value);
+                    return a.length > maxElements ? String.format("[%s elements]", a.length) : Arrays.toString(a);
+                } else if (Float.TYPE.equals(value.getClass().getComponentType())) {
+                    float[] a = float[].class.cast(value);
+                    return a.length > maxElements ? String.format("[%s elements]", a.length) : Arrays.toString(a);
+                } else if (Double.TYPE.equals(value.getClass().getComponentType())) {
+                    double[] a = double[].class.cast(value);
+                    return a.length > maxElements ? String.format("[%s elements]", a.length) : Arrays.toString(a);
+                } else {
+                    Object[] a = Object[].class.cast(value);
+                    return a.length > maxElements ? String.format("[%s elements]", a.length) : Arrays.toString(a);
+                }
+            } else if (value instanceof Collection) {
+                Collection c = Collection.class.cast(value);
+                return c.size() > maxElements ? String.format("[%s elements]", c.size()) : c.toString();
             }
-        } else {
-            return String.valueOf(value);
         }
+        return String.valueOf(value);
     }
     
     private String getBlockName(ProceedingJoinPoint joinPoint, BlockLoggable blockLoggable) {
