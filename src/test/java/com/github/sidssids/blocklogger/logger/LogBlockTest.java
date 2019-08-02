@@ -184,7 +184,7 @@ public class LogBlockTest {
         assertEquals(entry_start.message, "[+] test block");
         
         assertEquals(entry_close.level, "ERROR");
-        assertTrue(entry_close.message.matches("\\[-\\] test block \\(PT[\\d\\.]+S\\): Exception: " + testEx.toString()), "actual message: " + entry_close.message);
+        assertTrue(entry_close.message.matches("\\[-\\] test block \\(PT[\\d\\.]+S\\): Exception: " + testEx.getClass().getName() + "\\[test exception\\]"), "actual message: " + entry_close.message);
         
         assertEquals(messages.get(2), testEx.toString());
         IntStream.range(0, testEx.getStackTrace().length)
@@ -214,7 +214,7 @@ public class LogBlockTest {
         assertEquals(entry_start.message, "[+] test block");
         
         assertEquals(entry_close.level, "ERROR");
-        assertTrue(entry_close.message.matches("\\[-\\] test block \\(PT[\\d\\.]+S\\): error_result=error_value; Exception: " + testEx.toString()), "actual message: " + entry_close.message);
+        assertTrue(entry_close.message.matches("\\[-\\] test block \\(PT[\\d\\.]+S\\): error_result=error_value; Exception: " + testEx.getClass().getName() + "\\[test exception\\]"), "actual message: " + entry_close.message);
         
         assertEquals(messages.get(2), testEx.toString());
         IntStream.range(0, testEx.getStackTrace().length)
@@ -519,7 +519,7 @@ public class LogBlockTest {
         assertEquals(entry_close.level, "ERROR");
         assertEquals(entry_start.message, "[+] test block");
         assertEquals(entry_msg.message,   "    inside message");
-        assertEquals(entry_close.message, "[-] test block: Exception: " + testEx.toString());
+        assertEquals(entry_close.message, "[-] test block: Exception: " + testEx.getClass().getName() + "[test exception]");
         assertEquals(messages.get(3), testEx.toString());
         IntStream.range(0, testEx.getStackTrace().length)
                 .forEach(i -> assertEquals(messages.get(4 + i).trim(), "at " + testEx.getStackTrace()[i]));
@@ -550,7 +550,7 @@ public class LogBlockTest {
         assertEquals(entry_close.level, "ERROR");
         assertEquals(entry_start.message, "[+] test block");
         assertEquals(entry_msg.message,   "    inside message");
-        assertEquals(entry_close.message, "[-] test block: error_result=error_value; Exception: " + testEx.toString());
+        assertEquals(entry_close.message, "[-] test block: error_result=error_value; Exception: " + testEx.getClass().getName() + "[test exception]");
         assertEquals(messages.get(3), testEx.toString());
         IntStream.range(0, testEx.getStackTrace().length)
                 .forEach(i -> assertEquals(messages.get(4 + i).trim(), "at " + testEx.getStackTrace()[i]));
@@ -707,7 +707,7 @@ public class LogBlockTest {
         assertEquals(entry_close.level, "ERROR");
         assertEquals(entry_start.message, "[+] test block");
         assertEquals(entry_msg.message,   "    inside message");
-        assertEquals(entry_close.message, "[-] test block: Exception: " + testEx.toString());
+        assertEquals(entry_close.message, "[-] test block: Exception: " + testEx.getClass().getName() + "[test exception]");
         assertEquals(messages.get(3), testEx.toString());
         IntStream.range(0, testEx.getStackTrace().length)
                 .forEach(i -> assertEquals(messages.get(4 + i).trim(), "at " + testEx.getStackTrace()[i]));
@@ -738,7 +738,7 @@ public class LogBlockTest {
         assertEquals(entry_close.level, "ERROR");
         assertEquals(entry_start.message, "[+] test block");
         assertEquals(entry_msg.message,   "    inside message");
-        assertEquals(entry_close.message, "[-] test block: Exception: " + testEx.toString());
+        assertEquals(entry_close.message, "[-] test block: Exception: " + testEx.getClass().getName() + "[test exception]");
         assertEquals(messages.get(3), testEx.toString());
         IntStream.range(0, testEx.getStackTrace().length)
                 .forEach(i -> assertEquals(messages.get(4 + i).trim(), "at " + testEx.getStackTrace()[i]));
@@ -983,7 +983,7 @@ public class LogBlockTest {
         assertEquals(entry_close.level, "ERROR");
         assertEquals(entry_start.message, "[+] test block");
         assertEquals(entry_msg.message,   "    inside message");
-        assertEquals(entry_close.message, "[-] test block: Exception: " + testEx.toString());
+        assertEquals(entry_close.message, "[-] test block: Exception: " + testEx.getClass().getName() + "[test exception]");
         
         cleanUpStreams(out);
     }
@@ -1011,11 +1011,38 @@ public class LogBlockTest {
         assertEquals(entry_close.level, "ERROR");
         assertEquals(entry_start.message, "[+] test block");
         assertEquals(entry_msg.message,   "    inside message");
-        assertEquals(entry_close.message, "[-] test block: error_result=error_value; Exception: " + testEx.toString());
+        assertEquals(entry_close.message, "[-] test block: error_result=error_value; Exception: " + testEx.getClass().getName() + "[test exception]");
         
         cleanUpStreams(out);
     }
-
+    
+    @Test
+    public void test_exceptionFormat() {
+        String loggerName = "test-logger-without-stack-trace";
+        
+        RuntimeException testEx = new RuntimeException("outer", new IllegalArgumentException("inner"));
+        
+        ByteArrayOutputStream out = setUpOutStream();
+        
+        try (LogBlock log = LogBlockFactory.info(loggerName, "test block")) {
+            LoggerFactory.getLogger(loggerName).debug("inside message");
+            log.withException(testEx).reportError("error_result=%s", "error_value");
+        }
+        
+        List<String> messages = Arrays.asList(out.toString().split("\\n"));
+        assertEquals(messages.size(), 3);
+        LogEntry entry_start = LogEntry.parse(messages.get(0));
+        LogEntry entry_msg   = LogEntry.parse(messages.get(1));
+        LogEntry entry_close = LogEntry.parse(messages.get(2));
+        assertEquals(entry_start.level, "INFO");
+        assertEquals(entry_msg.level,   "DEBUG");
+        assertEquals(entry_close.level, "ERROR");
+        assertEquals(entry_start.message, "[+] test block");
+        assertEquals(entry_msg.message,   "    inside message");
+        assertEquals(entry_close.message, "[-] test block: error_result=error_value; Exception: " + RuntimeException.class.getName() + "[outer] caused by " + IllegalArgumentException.class.getName() + "[inner]");
+        
+        cleanUpStreams(out);
+    }
     
     @Test
     public void test_indention_property_null() {

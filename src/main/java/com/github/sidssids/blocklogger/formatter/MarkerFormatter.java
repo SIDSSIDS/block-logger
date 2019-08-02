@@ -58,9 +58,29 @@ public class MarkerFormatter {
             if (appendResult) {
                 message.append("; ");
             }
-            message.append("Exception: ").append(marker.getException().get().toString());
+            message.append("Exception: ");
+            appendExceptionInfo(message, marker.getException().get());
         }
         return message.toString();
+    }
+    
+    private static void appendExceptionInfo(StringBuilder message, Throwable e) {
+        appendThrowable(message, e);
+        
+        Throwable cause = e.getCause();
+        while (cause != null) {
+            message.append(" caused by ");
+            appendThrowable(message, cause);
+            cause = cause.getCause();
+        }
+        
+    }
+    
+    private static void appendThrowable(StringBuilder message, Throwable e) {
+        message.append(e.getClass().getName());
+        if (e.getMessage() != null) {
+            message.append("[").append(e.getMessage()).append("]");
+        }
     }
     
     private static Settings getOrDefault(Settings settings) {
