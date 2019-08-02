@@ -39,7 +39,7 @@ public class LogBlockInterceptor {
                 if (blockLoggable.appendResult()) {
                     Class returnClass = MethodSignature.class.cast(joinPoint.getSignature()).getReturnType();
                     if (!Void.TYPE.equals(returnClass) && !Void.class.equals(returnClass)) {
-                        log.reportSuccess("%s", result);
+                        log.reportSuccess("%s", formatValue(result));
                     }
                 }
                 return result;
@@ -90,13 +90,35 @@ public class LogBlockInterceptor {
         if (name == null || "".equals(name) || args.length <= index) {
             return null;
         }
-        Object value = args[index];
+        Object value    = args[index];
+        String valueStr = formatValue(value);
+        return String.format("%s=%s", name, valueStr);
+    }
+    
+    private String formatValue(Object value) {
         if (value != null
-                && value.getClass().isArray()
-                && Byte.TYPE.equals(value.getClass().getComponentType())) {
-            return String.format("%s=[%s bytes]", name, ((byte[])value).length);
+                && value.getClass().isArray()) {
+            if (Byte.TYPE.equals(value.getClass().getComponentType())) {
+                return String.valueOf(byte[].class.cast(value).length);
+            } else if (Boolean.TYPE.equals(value.getClass().getComponentType())) {
+                return Arrays.toString(boolean[].class.cast(value));
+            } else if (Character.TYPE.equals(value.getClass().getComponentType())) {
+                return Arrays.toString(char[].class.cast(value));
+            } else if (Short.TYPE.equals(value.getClass().getComponentType())) {
+                return Arrays.toString(short[].class.cast(value));
+            } else if (Integer.TYPE.equals(value.getClass().getComponentType())) {
+                return Arrays.toString(int[].class.cast(value));
+            } else if (Long.TYPE.equals(value.getClass().getComponentType())) {
+                return Arrays.toString(long[].class.cast(value));
+            } else if (Float.TYPE.equals(value.getClass().getComponentType())) {
+                return Arrays.toString(float[].class.cast(value));
+            } else if (Double.TYPE.equals(value.getClass().getComponentType())) {
+                return Arrays.toString(double[].class.cast(value));
+            } else {
+                return Arrays.toString(Object[].class.cast(value));
+            }
         } else {
-            return String.format("%s=%s", name, value);
+            return String.valueOf(value);
         }
     }
     
