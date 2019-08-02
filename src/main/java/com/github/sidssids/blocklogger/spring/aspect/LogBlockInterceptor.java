@@ -61,25 +61,6 @@ public class LogBlockInterceptor {
         return true;
     }
     
-    private String getExceptionInfo(Throwable e) {
-        StringBuilder sb = appendThrowable(new StringBuilder(), e);
-        
-        Throwable cause = e.getCause();
-        while (cause != null) {
-            appendThrowable(sb.append(" Caused by: "), cause);
-            cause = cause.getCause();
-        }
-        return sb.toString();
-    }
-    
-    private StringBuilder appendThrowable(StringBuilder sb, Throwable e) {
-        sb.append(e.getClass().getName());
-        if (e.getMessage() != null) {
-            sb.append("(").append(e.getMessage()).append(")");
-        }
-        return sb;
-    }
-    
     private String createArgs(BlockLoggable blockLoggable, Object[] args) {
         if (!blockLoggable.appendArgs() || args == null || args.length == 0) {
             return null;
