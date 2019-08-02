@@ -33,6 +33,30 @@ The output:
 2018-04-25 13:04:54,682 [main      ] INFO      inside block
 2018-04-25 13:04:54,686 [main      ] INFO  [-] block (PT0.004S)
 ```
+## Annotation and Spring Boot
+**Comming soon in the next release!**
+
+Within Spring Boot application you can mark a method with annotation `@BlockLoggable`:
+```java
+@Component
+public class TestBean {
+    
+    private final Logger logger = LoggerFactory.getLogger(TestBean.class);
+    
+    @BlockLoggable
+    public void test() {
+        logger.info("Hello, world!");
+    }
+    
+}
+```
+The output:
+```
+2018-04-25 13:04:54,682 [main      ] INFO  [+] test
+2018-04-25 13:04:54,682 [main      ] INFO      Hello, world!
+2018-04-25 13:04:54,686 [main      ] INFO  [-] block (PT0.004S)
+```
+ 
 Refer [wiki](https://github.com/SIDSSIDS/block-logger/wiki) for details and configuration
 
 | Stable Release Version | JDK Version compatibility | Release Date |
