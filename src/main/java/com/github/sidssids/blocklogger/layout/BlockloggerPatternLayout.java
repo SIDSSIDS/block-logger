@@ -22,13 +22,15 @@ public class BlockloggerPatternLayout extends PatternLayout {
     }
     
     private BlockLoggingEventProxy proxy(ILoggingEvent event) {
-        return new BlockLoggingEventProxy(event, generateMessage(event), appendStackTrace(event.getMarker()));
+        return new BlockLoggingEventProxy(event, generateMessage(event), suppressException(event.getMarker()));
     }
     
-    private boolean appendStackTrace(Marker marker) {
+    private boolean suppressException(Marker marker) {
         return marker != null
                 && marker instanceof CloseMarker
-                && !settings.isAppendStackTrace();
+                && !CloseMarker.class.cast(marker)
+                                        .getAppendStackTrace()
+                                        .orElse(settings.isAppendStackTrace());
     }
     
     public String generateMessage(ILoggingEvent event) {

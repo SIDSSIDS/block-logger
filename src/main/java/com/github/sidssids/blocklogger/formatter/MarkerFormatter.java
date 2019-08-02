@@ -41,8 +41,8 @@ public class MarkerFormatter {
             message.append(" (").append(marker.getDuration().toString()).append(")");
         }
         
-        boolean appendResult = settings.isAppendResult()        && marker.getResult().isPresent();
-        boolean appendExInfo = settings.isAppendExceptionInfo() && marker.getException().isPresent();
+        boolean appendResult = marker.getResult().isPresent()    && settings.isAppendResult();
+        boolean appendExInfo = marker.getException().isPresent() && marker.getAppendExceptionInfo().orElse(settings.isAppendExceptionInfo());
         
         if (appendResult || appendExInfo) {
             message.append(": ");

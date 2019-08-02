@@ -19,6 +19,8 @@ public class LogBlock implements Logger, Closeable {
     private final Instant   start;
     private       Throwable exception;
     private       String    result;
+    private       Boolean   appendExceptionInfo;
+    private       Boolean   appendStackTrace;
     
     LogBlock(Logger logger, Level level, String title, String params) {
         this.logger       = logger;
@@ -119,7 +121,13 @@ public class LogBlock implements Logger, Closeable {
     }
     
     public LogBlock withException(Throwable ex) {
+        return withException(ex, null, null);
+    }
+    
+    public LogBlock withException(Throwable ex, Boolean appendExceptionInfo, Boolean appendStackTrace) {
         exception = ex;
+        this.appendExceptionInfo = appendExceptionInfo;
+        this.appendStackTrace    = appendStackTrace;
         return this;
     }
     
@@ -129,7 +137,9 @@ public class LogBlock implements Logger, Closeable {
             CloseMarker marker = new CloseMarker(title)
                     .withDuration(Duration.between(start, Instant.now()))
                     .withResult(result)
-                    .withException(exception);
+                    .withException(exception)
+                    .appendExceptionInfo(appendExceptionInfo)
+                    .appendStackTrace(appendStackTrace);
             String message = MarkerFormatter.generateCloseBlockMessage(marker);
             log(disposeLevel, marker, message);
         }
