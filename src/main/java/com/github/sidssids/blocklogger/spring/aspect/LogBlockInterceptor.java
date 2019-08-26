@@ -30,11 +30,7 @@ public class LogBlockInterceptor {
     
     @Around(value = "publicMethod() && loggableMethod(blockLoggable)", argNames = "blockLoggable")
     public Object logMethod(ProceedingJoinPoint joinPoint, BlockLoggable blockLoggable) throws Throwable {
-        Class  clazz      = joinPoint.getSignature().getDeclaringType();
-        String blockName  = getBlockName(joinPoint, blockLoggable);
-        String params     = createArgs(blockLoggable, joinPoint.getArgs());
-        Level  level      = blockLoggable.level();
-        try (LogBlock log = LogBlockFactory.create(clazz, level, blockName, params)) {
+        try (LogBlock log = createBlock(joinPoint, blockLoggable)) {
             try {
                 Object result = joinPoint.proceed();
                 if (blockLoggable.appendResult()) {
@@ -50,6 +46,20 @@ public class LogBlockInterceptor {
                 }
                 throw e;
             }
+        }
+    }
+    
+    private LogBlock createBlock(ProceedingJoinPoint joinPoint, BlockLoggable blockLoggable) {
+        String loggerName = blockLoggable.loggerName();
+        Class  clazz      = joinPoint.getSignature().getDeclaringType();
+        String blockName  = getBlockName(joinPoint, blockLoggable);
+        String params     = createArgs(blockLoggable, joinPoint.getArgs());
+        Level  level      = blockLoggable.level();
+        
+        if (loggerName != null && !"".equals(loggerName)) {
+            return LogBlockFactory.create(loggerName, level, blockName, params);
+        } else {
+            return LogBlockFactory.create(clazz, level, blockName, params);
         }
     }
     
