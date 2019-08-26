@@ -11,14 +11,14 @@ import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.List;
 import org.slf4j.LoggerFactory;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
-import static org.testng.Assert.*;
+import static org.junit.Assert.*;
 
 public class LogBlockTabStringTest {
     
-    private final PrintStream defaultOut = System.out;
+    private static final PrintStream defaultOut = System.out;
     
     private ByteArrayOutputStream setUpOutStream() {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -36,7 +36,7 @@ public class LogBlockTabStringTest {
     }
     
     @BeforeClass
-    public void init() {
+    public static void init() {
         LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
         try {
             JoranConfigurator configurator = new JoranConfigurator();
@@ -44,7 +44,7 @@ public class LogBlockTabStringTest {
             // Call context.reset() to clear any previous configuration, e.g. default
             // configuration. For multi-step configuration, omit calling context.reset().
             context.reset();
-            configurator.doConfigure(this.getClass().getResourceAsStream("/logback_tab_string.xml"));
+            configurator.doConfigure(LogBlockTabStringTest.class.getResourceAsStream("/logback_tab_string.xml"));
         } catch (JoranException je) {
             // StatusPrinter will handle this
             je.printStackTrace(defaultOut);

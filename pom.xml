@@ -55,9 +55,7 @@
         <version.maven-gpg-plugin>1.6</version.maven-gpg-plugin>
         
         <version.logback>1.2.3</version.logback>
-        <version.spring-boot-starter-aop>2.1.6.RELEASE</version.spring-boot-starter-aop>
-        
-        <version.testng>6.14.3</version.testng>
+        <version.spring-boot-starter>2.1.6.RELEASE</version.spring-boot-starter>
     </properties>
     
     <dependencies>
@@ -71,15 +69,8 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-aop</artifactId>
-            <version>${version.spring-boot-starter-aop}</version>
+            <version>${version.spring-boot-starter}</version>
             <scope>provided</scope>
-        </dependency>
-        
-        <dependency>
-            <groupId>org.testng</groupId>
-            <artifactId>testng</artifactId>
-            <version>${version.testng}</version>
-            <scope>test</scope>
         </dependency>
     </dependencies>
 

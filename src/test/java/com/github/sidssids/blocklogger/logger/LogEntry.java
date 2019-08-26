@@ -2,7 +2,8 @@ package com.github.sidssids.blocklogger.logger;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.testng.Assert;
+
+import org.junit.Assert;
 
 class LogEntry {
 

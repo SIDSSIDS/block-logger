@@ -12,14 +12,14 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.IntStream;
 import org.slf4j.LoggerFactory;
-import org.testng.annotations.Test;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
-import static org.testng.Assert.*;
-import org.testng.annotations.BeforeClass;
+import static org.junit.Assert.*;
 
 public class LogBlockTest {
     
-    private final PrintStream defaultOut = System.out;
+    private static final PrintStream defaultOut = System.out;
     
     private ByteArrayOutputStream setUpOutStream() {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -37,7 +37,7 @@ public class LogBlockTest {
     }
     
     @BeforeClass
-    public void init() {
+    public static void init() {
         LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
         try {
             JoranConfigurator configurator = new JoranConfigurator();
@@ -45,7 +45,7 @@ public class LogBlockTest {
             // Call context.reset() to clear any previous configuration, e.g. default
             // configuration. For multi-step configuration, omit calling context.reset().
             context.reset();
-            configurator.doConfigure(this.getClass().getResourceAsStream("/logback.xml"));
+            configurator.doConfigure(LogBlockTest.class.getResourceAsStream("/logback.xml"));
         } catch (JoranException je) {
             // StatusPrinter will handle this
             je.printStackTrace(defaultOut);
@@ -184,7 +184,7 @@ public class LogBlockTest {
         assertEquals(entry_start.message, "[+] test block");
         
         assertEquals(entry_close.level, "ERROR");
-        assertTrue(entry_close.message.matches("\\[-\\] test block \\(PT[\\d\\.]+S\\): Exception: " + testEx.getClass().getName() + "\\[test exception\\]"), "actual message: " + entry_close.message);
+        assertTrue("actual message: " + entry_close.message, entry_close.message.matches("\\[-\\] test block \\(PT[\\d\\.]+S\\): Exception: " + testEx.getClass().getName() + "\\[test exception\\]"));
         
         assertEquals(messages.get(2), testEx.toString());
         IntStream.range(0, testEx.getStackTrace().length)
@@ -214,7 +214,7 @@ public class LogBlockTest {
         assertEquals(entry_start.message, "[+] test block");
         
         assertEquals(entry_close.level, "ERROR");
-        assertTrue(entry_close.message.matches("\\[-\\] test block \\(PT[\\d\\.]+S\\): error_result=error_value; Exception: " + testEx.getClass().getName() + "\\[test exception\\]"), "actual message: " + entry_close.message);
+        assertTrue("actual message: " + entry_close.message, entry_close.message.matches("\\[-\\] test block \\(PT[\\d\\.]+S\\): error_result=error_value; Exception: " + testEx.getClass().getName() + "\\[test exception\\]"));
         
         assertEquals(messages.get(2), testEx.toString());
         IntStream.range(0, testEx.getStackTrace().length)
@@ -415,7 +415,7 @@ public class LogBlockTest {
         assertEquals(entry2.message, "msg:message inside with param value");
         
         assertEquals(entry3.level, "ERROR");
-        assertTrue(entry3.message.matches("msg:\\[-\\] test block \\(PT[\\d\\.]+S\\)"), String.format("Wrong format: %s", entry3.message));
+        assertTrue(String.format("Wrong format: %s", entry3.message), entry3.message.matches("msg:\\[-\\] test block \\(PT[\\d\\.]+S\\)"));
 
         cleanUpStreams(out);
     }
@@ -579,7 +579,7 @@ public class LogBlockTest {
         assertEquals(entry_close.level, "INFO");
         assertEquals(entry_start.message, "[+] test block");
         assertEquals(entry_msg.message,   "    inside message");
-        assertTrue(entry_close.message.matches("\\[-\\] test block \\(PT[\\d\\.]+S\\)"), String.format("Wrong format: %s", entry_close.message));
+        assertTrue(String.format("Wrong format: %s", entry_close.message), entry_close.message.matches("\\[-\\] test block \\(PT[\\d\\.]+S\\)"));
         cleanUpStreams(out);
     }
     
@@ -604,7 +604,7 @@ public class LogBlockTest {
         assertEquals(entry_close.level, "INFO");
         assertEquals(entry_start.message, "[+] test block");
         assertEquals(entry_msg.message,   "    inside message");
-        assertTrue(entry_close.message.matches("\\[-\\] test block \\(PT[\\d\\.]+S\\)"), String.format("Wrong format: %s", entry_close.message));
+        assertTrue(String.format("Wrong format: %s", entry_close.message), entry_close.message.matches("\\[-\\] test block \\(PT[\\d\\.]+S\\)"));
         cleanUpStreams(out);
     }
     
