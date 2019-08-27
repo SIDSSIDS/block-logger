@@ -4,9 +4,6 @@ import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.joran.JoranConfigurator;
 import ch.qos.logback.core.joran.spi.JoranException;
 import ch.qos.logback.core.util.StatusPrinter;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.List;
 import org.slf4j.LoggerFactory;
@@ -14,25 +11,13 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
+import org.junit.Rule;
+import org.springframework.boot.test.rule.OutputCapture;
 
 public class LogBlockWithoutIndentionTest {
     
-    private static final PrintStream defaultOut = System.out;
-    
-    private ByteArrayOutputStream setUpOutStream() {
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        System.setOut(new PrintStream(out));
-        return out;
-    }
-    
-    private void cleanUpStreams(ByteArrayOutputStream out) {
-        try {
-            System.setOut(defaultOut);
-            out.close();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
+    @Rule
+    public OutputCapture capture = new OutputCapture();
     
     @BeforeClass
     public static void init() {
@@ -46,15 +31,13 @@ public class LogBlockWithoutIndentionTest {
             configurator.doConfigure(LogBlockWithoutIndentionTest.class.getResourceAsStream("/logback_without_indention.xml"));
         } catch (JoranException je) {
             // StatusPrinter will handle this
-            je.printStackTrace(defaultOut);
+            je.printStackTrace(System.err);
         }
         StatusPrinter.printInCaseOfErrorsOrWarnings(context);
     }
     
     @Test
     public void test_withoutIndention() {
-        
-        ByteArrayOutputStream out = setUpOutStream();
         
         try (LogBlock log = LogBlockFactory.info(this.getClass(), "test block")) {
             try (LogBlock log2 = LogBlockFactory.info(this.getClass(), "inner test block")) {
@@ -63,7 +46,7 @@ public class LogBlockWithoutIndentionTest {
             LoggerFactory.getLogger(this.getClass()).debug("inside message");
         }
         
-        List<String> messages = Arrays.asList(out.toString().split("\\n"));
+        List<String> messages = Arrays.asList(capture.toString().split("\\n"));
         assertEquals(messages.size(), 6);
         LogEntry entry_start       = LogEntry.parse(messages.get(0));
         LogEntry entry_start_inner = LogEntry.parse(messages.get(1));
@@ -85,7 +68,6 @@ public class LogBlockWithoutIndentionTest {
         assertEquals(entry_close_inner.message, "[-] inner test block");
         assertEquals(entry_msg2.message,        "inside message");
         assertEquals(entry_close.message,       "[-] test block");
-        cleanUpStreams(out);
     }
 
 }
