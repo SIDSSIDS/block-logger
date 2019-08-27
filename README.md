@@ -34,7 +34,6 @@ The output:
 2018-04-25 13:04:54,686 [main      ] INFO  [-] block (PT0.004S)
 ```
 ## Annotation and Spring Boot
-**Comming soon in the next release!**
 
 Within Spring Boot application you can mark a method with annotation `@BlockLoggable`:
 ```java
@@ -52,7 +51,7 @@ public class TestBean {
 ```
 The output:
 ```
-2018-04-25 13:04:54,682 [main      ] INFO  [+] test
+2018-04-25 13:04:54,682 [main      ] INFO  [+] block
 2018-04-25 13:04:54,682 [main      ] INFO      Hello, world!
 2018-04-25 13:04:54,686 [main      ] INFO  [-] block (PT0.004S)
 ```
@@ -61,6 +60,7 @@ Refer [wiki](https://github.com/SIDSSIDS/block-logger/wiki) for details and conf
 
 | Stable Release Version | JDK Version compatibility | Release Date |
 | ------------- | ------------- | ------------|
+| 1.2.1  | 1.8+ | 2018-08-27 |
 | 1.1.0  | 1.8+ | 2018-07-30 |
 | 1.0.0  | 1.8+ | 2018-06-27 |
 
@@ -70,6 +70,6 @@ You can pull block-logger from the central maven repository, just add these to y
 <dependency>
   <groupId>com.github.sidssids</groupId>
   <artifactId>block-logger</artifactId>
-  <version>1.1.0</version>
+  <version>1.2.1</version>
 </dependency>
 ```
