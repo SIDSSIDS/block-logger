@@ -5,14 +5,15 @@ import java.util.regex.Pattern;
 
 import org.junit.Assert;
 
-class LogEntry {
+public class LogEntry {
 
     private static final Pattern PATTERN = Pattern.compile("(?<timestamp>\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2},\\d{3}) " + "\\[(?<threadName>[^\\]]+)\\] " + "(?<level>.{5}) " + "(?<message>.*)");
-    String source;
-    String timestamp;
-    String level;
-    String threadName;
-    String message;
+    
+    public String source;
+    public String timestamp;
+    public String level;
+    public String threadName;
+    public String message;
 
     public LogEntry withSource(final String source) {
         this.source = source;
@@ -39,7 +40,7 @@ class LogEntry {
         return this;
     }
 
-    static LogEntry parse(String message) {
+    public static LogEntry parse(String message) {
         Matcher m = PATTERN.matcher(message);
         if (m.find()) {
             return new LogEntry().withSource(message).withTimestamp(m.group("timestamp").trim()).withThreadName(m.group("threadName").trim()).withLevel(m.group("level").trim()).withMessage(m.group("message"));

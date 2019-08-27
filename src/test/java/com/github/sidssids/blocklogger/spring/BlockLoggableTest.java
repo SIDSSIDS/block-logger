@@ -1,5 +1,6 @@
 package com.github.sidssids.blocklogger.spring;
 
+import com.github.sidssids.blocklogger.logger.LogEntry;
 import com.github.sidssids.blocklogger.spring.annotation.BlockLoggable;
 import com.github.sidssids.blocklogger.spring.config.EnableLogBlock;
 import org.junit.Rule;
@@ -28,16 +29,27 @@ public class BlockLoggableTest {
     
     @Test
     public void test() {
-        service.test();
+        service.testMethod();
         String[] lines = capture.toString().split(System.lineSeparator());
         assertEquals(3, lines.length);
+        LogEntry open  = LogEntry.parse(lines[0]);
+        LogEntry msg   = LogEntry.parse(lines[1]);
+        LogEntry close = LogEntry.parse(lines[2]);
+        
+        assertEquals("INFO",  open.level);
+        assertEquals("DEBUG", msg.level);
+        assertEquals("INFO",  close.level);
+        
+        assertEquals("[+] testMethod", open.message);
+        assertEquals("    test message", msg.message);
+        assertTrue(close.message.matches("\\[-\\] testMethod \\(PT[\\d\\.]+S\\)"));
     }
     
     public static class TestService {
         
-        @BlockLoggable(loggerName = "test-logger")
-        public void test() {
-            LoggerFactory.getLogger("test-logger").info("test");
+        @BlockLoggable(loggerName = "test-logger", appendResult = false)
+        public void testMethod() {
+            LoggerFactory.getLogger("test-logger").debug("test message");
         }
         
     }
