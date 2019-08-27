@@ -51,9 +51,9 @@ public class TestBean {
 ```
 The output:
 ```
-2018-04-25 13:04:54,682 [main      ] INFO  [+] block
+2018-04-25 13:04:54,682 [main      ] INFO  [+] test
 2018-04-25 13:04:54,682 [main      ] INFO      Hello, world!
-2018-04-25 13:04:54,686 [main      ] INFO  [-] block (PT0.004S)
+2018-04-25 13:04:54,686 [main      ] INFO  [-] test (PT0.004S)
 ```
  
 Refer [wiki](https://github.com/SIDSSIDS/block-logger/wiki) for details and configuration
