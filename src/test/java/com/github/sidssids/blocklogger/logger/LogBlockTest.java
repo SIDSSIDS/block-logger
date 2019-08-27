@@ -1162,20 +1162,4 @@ public class LogBlockTest {
         cleanUpStreams(out);
     }
     
-    @Test
-    public void test_indention_property_null() {
-        LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
-        String indention = context.getProperty(Indent.Properties.ENABLED_PROPERTY);
-        assertNull(indention);
-        assertEquals(Indent.getInstance().isEnabled(), Indent.Defaults.ENABLED);
-    }
-    
-    @Test
-    public void test_tagString_property_default() {
-        LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
-        String tabString = context.getProperty(Indent.Properties.TAB_STRING_PROPERTY);
-        assertNull(tabString);
-        assertEquals(Indent.getInstance().getTabString(), Indent.Defaults.TAB_STRING);
-    }
-    
 }

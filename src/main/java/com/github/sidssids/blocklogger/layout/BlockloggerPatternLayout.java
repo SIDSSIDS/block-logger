@@ -6,6 +6,7 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import com.github.sidssids.blocklogger.config.Settings;
 import com.github.sidssids.blocklogger.formatter.MarkerFormatter;
 import com.github.sidssids.blocklogger.layout.tools.BlockLoggingEventProxy;
+import com.github.sidssids.blocklogger.layout.tools.IndentedLoggingEventProxy;
 import com.github.sidssids.blocklogger.logger.markers.CloseMarker;
 import com.github.sidssids.blocklogger.logger.markers.StartMarker;
 import org.slf4j.Marker;
@@ -13,16 +14,22 @@ import org.slf4j.Marker;
 public class BlockloggerPatternLayout extends PatternLayout {
     
     private final Settings settings;
+    private final Indent   indent;
 
-    public BlockloggerPatternLayout(Settings settings) {
+    public BlockloggerPatternLayout(Settings settings, Indent indent) {
         this.settings = settings;
+        this.indent   = indent;
         getInstanceConverterMap().put("m", IndentedMessageConverter.class.getName());
         getInstanceConverterMap().put("msg", IndentedMessageConverter.class.getName());
         getInstanceConverterMap().put("message", IndentedMessageConverter.class.getName());
     }
     
-    private BlockLoggingEventProxy proxy(ILoggingEvent event) {
-        return new BlockLoggingEventProxy(event, generateMessage(event), suppressException(event.getMarker()));
+    private ILoggingEvent proxy(ILoggingEvent event) {
+        return new IndentedLoggingEventProxy(event, indent);
+    }
+    
+    private ILoggingEvent startStopProxy(ILoggingEvent event) {
+        return new BlockLoggingEventProxy(event, indent, generateMessage(event), suppressException(event.getMarker()));
     }
     
     private boolean suppressException(Marker marker) {
@@ -46,14 +53,16 @@ public class BlockloggerPatternLayout extends PatternLayout {
     @Override
     public String doLayout(ILoggingEvent event) {
         if (isOpeningOrClosingEvent(event)) {
+            event = startStopProxy(event);
+        } else {
             event = proxy(event);
         }
         if (isClosing(event)) {
-            Indent.getInstance().decrement();
+            indent.decrement();
         }
         String result = super.doLayout(event);
         if (isOpening(event)) {
-            Indent.getInstance().increment();
+            indent.increment();
         }
         return result;
     }

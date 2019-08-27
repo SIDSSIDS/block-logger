@@ -4,11 +4,13 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.pattern.PatternLayoutEncoderBase;
 import com.github.sidssids.blocklogger.config.Settings;
 import com.github.sidssids.blocklogger.layout.BlockloggerPatternLayout;
+import com.github.sidssids.blocklogger.layout.tools.Indent;
 
 public class BlockloggerPatternLayoutEncoder extends PatternLayoutEncoderBase<ILoggingEvent>  {
     
     private final Settings settings = new Settings();
-    
+    private final Indent   indent   = new Indent();
+
     public void setProfiling(Boolean profiling) {
         settings.setProfiling(profiling);
     }
@@ -28,6 +30,14 @@ public class BlockloggerPatternLayoutEncoder extends PatternLayoutEncoderBase<IL
     public void setAppendStackTrace(Boolean appendStackTrace) {
         settings.setAppendStackTrace(appendStackTrace);
     }
+    
+    public void setIndentEnabled(Boolean indentEnabled) {
+        indent.setEnabled(indentEnabled);
+    }
+    
+    public void setTabString(String tabString) {
+        indent.setTabString(tabString);
+    }
 
     public Settings getSettings() {
         return settings;
@@ -35,7 +45,7 @@ public class BlockloggerPatternLayoutEncoder extends PatternLayoutEncoderBase<IL
     
     @Override
     public void start() {
-        BlockloggerPatternLayout patternLayout = new BlockloggerPatternLayout(settings);
+        BlockloggerPatternLayout patternLayout = new BlockloggerPatternLayout(settings, indent);
         patternLayout.setContext(context);
         patternLayout.setPattern(getPattern());
         patternLayout.setOutputPatternAsHeader(outputPatternAsHeader);

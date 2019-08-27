@@ -9,24 +9,13 @@ public class Indent {
         public static final String  TAB_STRING = "    ";
     }
     
-    public static class Properties {
-        public static final String ENABLED_PROPERTY    = "com.github.sidssids.blocklogger.indention.enabled";
-        public static final String TAB_STRING_PROPERTY = "com.github.sidssids.blocklogger.indention.tabString";
-    }
-    
-    private static final Indent instance = new Indent();
-    
     private final ThreadLocal<Integer> level = new InheritableThreadLocal<>();
     private final ThreadLocal<String>  pad   = new InheritableThreadLocal<>();
     
     private String  tabString;
     private boolean enabled;
     
-    public static Indent getInstance() {
-        return instance;
-    }
-
-    private Indent() {
+    public Indent() {
         tabString = Defaults.TAB_STRING;
         enabled = Defaults.ENABLED;
     }
@@ -50,10 +39,6 @@ public class Indent {
 
     public void setEnabled(Boolean enabled) {
         this.enabled = isNull(enabled, Defaults.ENABLED);
-    }
-    
-    public void setEnabled(String enabledStr) {
-        this.enabled = Boolean.parseBoolean(isNull(enabledStr, String.valueOf(Defaults.ENABLED)));
     }
     
     public Indent resetEnabled() {
