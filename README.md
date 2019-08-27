@@ -13,6 +13,7 @@ Block-logger is an extention for [logback](https://logback.qos.ch) logging frame
 2018-04-25 11:24:01,384 [main      ] INFO      [-] Store data (PT0.101S): saved
 2018-04-25 11:24:01,384 [main      ] INFO  [-] Change name (PT0.217S)
 ```
+
 ## Usage example
 Example of using `LogBlock` in couple with standard `org.slf4j.Logger`:
 ```java
